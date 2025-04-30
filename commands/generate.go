@@ -12,13 +12,6 @@ import (
 	"github.com/alexplayer15/parmesan/request_generator"
 )
 
-var output string
-
-var RootCmd = &cobra.Command{
-	Use:   "parmesan",
-	Short: "CLI tool to generate requests based off your OAS",
-}
-
 var GenerateRequestCmd = &cobra.Command{
 	Use:   "generate-request",
 	Short: "Generate a .http request from an OpenAPI file",
@@ -98,7 +91,4 @@ func ReadOASFile(file string) (oas_struct.OAS, error) {
 	return oas, nil
 }
 
-func init() {
-	GenerateRequestCmd.Flags().StringVar(&output, "output", "http", "Output format (e.g., http)")
-	RootCmd.AddCommand(GenerateRequestCmd)
-}
+
