@@ -3,7 +3,7 @@ package command_tests
 import (
 	"testing"
 
-	"github.com/alexplayer15/parmesan/src/commands"
+	"github.com/alexplayer15/parmesan/commands"
 	"github.com/stretchr/testify/assert"
 )
 
