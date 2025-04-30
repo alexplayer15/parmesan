@@ -34,7 +34,7 @@ var GenerateRequestCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		httpRequest, err := request_generator.GenerateHttpRequest(oas, "/hello")
+		httpRequest, err := request_generator.GenerateHttpRequest(oas)
 		filename := filepath.Join(".", "request.http")
 		os.WriteFile(filename, []byte(httpRequest), 0644)
 		if err != nil {
