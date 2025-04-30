@@ -2,6 +2,7 @@ package command_tests
 
 import (
 	"testing"
+	"os"
 	"github.com/alexplayer15/parmesan/commands"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,10 @@ func Test_WhenGenerateRequestIsNotGivenAnArg_ShouldFail(t *testing.T) {
 
 func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 	//Arrange
-	commands.RootCmd.SetArgs([]string{"generate-request", "file1.yaml", "file2.yaml"})
+	testOas := "oas.yml"
+	os.WriteFile(testOas, []byte("dummy content"), 0644)
+	defer os.Remove(testOas)
+	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
 
 	//Act
 	err := commands.RootCmd.Execute()
@@ -30,7 +34,10 @@ func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 }
 func Test_WhenGenerateRequestIsGivenValidArguments_ShouldNotError(t *testing.T) {
 	//Arrange 
-	commands.RootCmd.SetArgs([]string{"generate-request", "oas.yml"})
+	testOas := "oas.yml"
+	os.WriteFile(testOas, []byte("dummy content"), 0644)
+	defer os.Remove(testOas)
+	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
 
 	//Act 
 	err := commands.RootCmd.Execute()
@@ -51,13 +58,16 @@ func Test_WhenOASDoesNotExist_ShouldReturnNoFileFoundError(t *testing.T){
 
 func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T){
 	//Arrange 
-	commands.RootCmd.SetArgs([]string{"generate-request", "main.go"})
+	dummyFilename := "dummy.txt"
+	os.WriteFile(dummyFilename, []byte("dummy content"), 0644)
+	defer os.Remove(dummyFilename)
+	commands.RootCmd.SetArgs([]string{"generate-request", dummyFilename})
 
 	//Act 
 	err := commands.RootCmd.Execute()
 
 	//Assert
-	assert.EqualError(t, err, "file does not exist")
+	assert.EqualError(t, err, "OAS must be a JSON or YAML file")
 }
 
 func Test_WhenOASExistsAndIsValid_ShouldReturnNoError(t *testing.T){
