@@ -4,7 +4,7 @@ import (
     "fmt"
     "os"
 
-    "github.com/alexp/parmesan/src/commands"
+    "github.com/alexplayer15/parmesan/src/commands"
 )
 
 func main() {
