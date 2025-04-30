@@ -35,7 +35,14 @@ func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 func Test_WhenGenerateRequestIsGivenValidArguments_ShouldNotError(t *testing.T) {
 	//Arrange 
 	testOas := "oas.yml"
-	os.WriteFile(testOas, []byte("dummy content"), 0644)
+	yamlContent := `
+openapi: "3.0.0"
+info:
+  title: Example API
+  version: "1.0.0"
+paths: {}
+`
+	os.WriteFile(testOas, []byte(yamlContent), 0644)
 	defer os.Remove(testOas)
 	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
 

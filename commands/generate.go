@@ -37,9 +37,9 @@ func validateOasArgument(file string) error {
 	if fileExistsErr != nil {
 		return fileExistsErr
 	}
-	fileParseErr := verifyFileParsable(file)
-	if fileParseErr != nil {
-		return fileParseErr
+	oasContentErr := verifyOasContent(file)
+	if oasContentErr != nil {
+		return oasContentErr
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func verifyIfFileExists(file string) error {
 	return nil
 }
 
-func verifyFileParsable(file string) error {
+func verifyOasContent(file string) error {
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -69,7 +69,7 @@ func verifyFileParsable(file string) error {
 		ext = ext[1:]
 	}
 
-	var data map[string]interface{}
+	var data map[string]any
 
 	switch ext {
 	case "json":
@@ -81,7 +81,14 @@ func verifyFileParsable(file string) error {
 			return fmt.Errorf("invalid YAML: %w", err)
 		}
 	default:
-		return fmt.Errorf("OAS must be a JSON or YAML file. You provided a %s file", ext)
+		return fmt.Errorf("unsupported file extension: %s", ext)
+	}
+
+	requiredFields := []string{"openapi", "info", "paths"}
+	for _, field := range requiredFields {
+		if _, ok := data[field]; !ok {
+			return fmt.Errorf("missing required OAS field: %s", field)
+		}
 	}
 
 	return nil
