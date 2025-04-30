@@ -1,0 +1,7 @@
+### Say Hello
+GET http://localhost:8080/hello
+Content-Type: application/json
+
+{
+  "name": "example name"
+}
