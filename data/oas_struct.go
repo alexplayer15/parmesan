@@ -1,5 +1,16 @@
 package oas_struct
 
+type Parameter struct {
+    Name        string `json:"name" yaml:"name"`
+    In          string `json:"in" yaml:"in"` // Can be "header", "query", "path", or "cookie"
+    Description string `json:"description" yaml:"description"`
+    Required    bool   `json:"required" yaml:"required"`
+    Schema      struct {
+        Type string `json:"type" yaml:"type"`
+    } `json:"schema" yaml:"schema"`
+    Example string `json:"example" yaml:"example"`
+}
+
 type Property struct {
     Type        string `json:"type" yaml:"type"`
     Description string `json:"description" yaml:"description"`
@@ -23,6 +34,7 @@ type Method struct {
     Summary     string      `json:"summary" yaml:"summary"`
     Description string      `json:"description" yaml:"description"`
     RequestBody RequestBody `json:"requestBody" yaml:"requestBody"`
+	Parameters  []Parameter `json:"parameters" yaml:"parameters"`
 }
 
 type Server struct {

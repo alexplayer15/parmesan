@@ -1,5 +1,7 @@
-### Says hello.
+### Path: /hello
+#### Summary: Says hello.
 GET http://localhost:8080/hello
+X-Hello-Header: 1
 Content-Type: application/json
 
 {
@@ -7,8 +9,10 @@ Content-Type: application/json
 }
 
 
-### Says goodbye.
+### Path: /goodbye
+#### Summary: Says goodbye.
 GET http://localhost:8080/goodbye
+X-Goodbye-Header: 1
 Content-Type: application/json
 
 {
