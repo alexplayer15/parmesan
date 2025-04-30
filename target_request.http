@@ -1,6 +1,7 @@
 ### Say Hello
 GET http://localhost:8080/hello
 Content-Type: application/json
+X-Hello-Header: 1
 
 {
   "name": "Alex"

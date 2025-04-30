@@ -19,26 +19,12 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 		for method, methodData := range methods {
 			httpRequest := fmt.Sprintf("### %s\n", methodData.Summary)
 			httpRequest += fmt.Sprintf("%s %s%s\n", strings.ToUpper(method), serverURL, path)
+
+			httpRequest += handleHeaders(methodData.Parameters)
+
 			httpRequest += "Content-Type: application/json\n\n"
 
-			requestBody := methodData.RequestBody
-			if content, ok := requestBody.Content["application/json"]; ok {
-				if content.Schema.Type == "object" {
-					httpRequest += "{\n"
-					for propName, prop := range content.Schema.Properties {
-						exampleValue := "example value"
-						if prop.Example != "" {
-							exampleValue = prop.Example
-						}
-						httpRequest += fmt.Sprintf("  \"%s\": \"%s\",\n", propName, exampleValue)
-					}
-					// Remove last comma
-					if len(content.Schema.Properties) > 0 {
-						httpRequest = httpRequest[:len(httpRequest)-2] + "\n"
-					}
-					httpRequest += "}\n"
-				}
-			}
+			httpRequest += handleRequestBody(methodData.RequestBody)
 
 			httpRequests += httpRequest + "\n\n"
 		}
@@ -46,3 +32,46 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 
 	return httpRequests, nil
 }
+
+func handleHeaders(parameters []oas_struct.Parameter) string {
+	var headers string
+
+	for _, param := range parameters {
+		if param.In == "header" {
+			// Default to "default-value" if no example is provided
+			headerValue := param.Example
+			if headerValue == "" {
+				headerValue = "default-value"
+			}
+			headers += fmt.Sprintf("%s: %s\n", param.Name, headerValue)
+		}
+	}
+
+	return headers
+}
+
+func handleRequestBody(requestBody oas_struct.RequestBody) string {
+	var body string
+	if content, ok := requestBody.Content["application/json"]; ok {
+
+		if content.Schema.Type == "object" {
+			body = "{\n"
+			for propName, prop := range content.Schema.Properties {
+				// Use the example value from the OAS spec
+				exampleValue := "example value"
+				if prop.Example != "" {
+					exampleValue = prop.Example
+				}
+				body += fmt.Sprintf("  \"%s\": \"%s\",\n", propName, exampleValue)
+			}
+
+			if len(content.Schema.Properties) > 0 {
+				body = body[:len(body)-2] + "\n"
+			}
+			body += "}\n"
+		}
+	}
+
+	return body
+}
+

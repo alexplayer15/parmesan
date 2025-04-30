@@ -1,5 +1,6 @@
 ### Says hello.
 GET http://localhost:8080/hello
+X-Hello-Header: 1
 Content-Type: application/json
 
 {

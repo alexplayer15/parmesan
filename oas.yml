@@ -12,6 +12,14 @@ paths:
       - Hello World
       summary: Says hello.
       description: Returns a greeting.
+      parameters:
+      - name: X-Hello-Header
+        in: header 
+        description: identifies how many people to say Hello to
+        required: true
+        schema:
+          type: string
+        example: 1
       requestBody:
         content: 
           application/json:
