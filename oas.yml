@@ -14,13 +14,14 @@ paths:
       description: Returns a greeting.
       requestBody:
         content: 
-        application/json:
-          schema:
-          type: object
-          properties:
-            name:
-              type: string
-              description: "The name of the user"
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "The name of the user"
+                  example: "Alex"
       responses:
         '200':
           description: A successful greeting response
@@ -28,3 +29,26 @@ paths:
             application/json:
               example:
                 message: "Hello, world!"
+  /goodbye:
+    get:
+      tags:
+      - Goodbye
+      summary: Says goodbye.
+      description: Returns a farewell.
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "The name of the user"
+                  example: "Mia"
+      responses:
+        '200':
+          description: A successful farewell response
+          content:
+            application/json:
+              example:
+                message: "Goodbye!"

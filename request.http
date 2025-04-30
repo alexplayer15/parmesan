@@ -1,0 +1,18 @@
+### Says hello.
+GET http://localhost:8080/hello
+Content-Type: application/json
+
+{
+  "name": "Alex"
+}
+
+
+### Says goodbye.
+GET http://localhost:8080/goodbye
+Content-Type: application/json
+
+{
+  "name": "Mia"
+}
+
+
