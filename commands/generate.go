@@ -8,6 +8,8 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
+	"github.com/alexplayer15/parmesan/data"
+	"github.com/alexplayer15/parmesan/request_generator"
 )
 
 var output string
@@ -23,25 +25,24 @@ var GenerateRequestCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		file := args[0]
-		if err := validateOasArgument(file); err != nil {
+		if err := verifyIfFileExists(file); err != nil {
 			return err
 		}
-		fmt.Printf("Generating request from: %s\n", file)
-		fmt.Printf("Output format: %s\n", output)
+		oas, err := ReadOASFile(args[0])
+		if err != nil {
+			fmt.Println("Error reading OAS file:", err)
+			os.Exit(1)
+		}
+
+		httpRequest, err := request_generator.GenerateHttpRequest(oas, "/hello")
+		filename := filepath.Join(".", "request.http")
+		os.WriteFile(filename, []byte(httpRequest), 0644)
+		if err != nil {
+		return fmt.Errorf("failed to write HTTP file: %w", err)
+		}
+		
 		return nil
 	},
-}
-
-func validateOasArgument(file string) error {
-	fileExistsErr := verifyIfFileExists(file)
-	if fileExistsErr != nil {
-		return fileExistsErr
-	}
-	oasContentErr := verifyOasContent(file)
-	if oasContentErr != nil {
-		return oasContentErr
-	}
-	return nil
 }
 
 func verifyIfFileExists(file string) error {
@@ -58,10 +59,10 @@ func verifyIfFileExists(file string) error {
 	return nil
 }
 
-func verifyOasContent(file string) error {
+func ReadOASFile(file string) (oas_struct.OAS, error) {
 	content, err := os.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("failed to read file: %w", err)
+		return oas_struct.OAS{}, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	ext := filepath.Ext(file)
@@ -69,29 +70,32 @@ func verifyOasContent(file string) error {
 		ext = ext[1:]
 	}
 
-	var data map[string]any
+	var oas oas_struct.OAS
 
 	switch ext {
 	case "json":
-		if err := json.Unmarshal(content, &data); err != nil {
-			return fmt.Errorf("invalid JSON: %w", err)
+		if err := json.Unmarshal(content, &oas); err != nil {
+			return oas_struct.OAS{}, fmt.Errorf("invalid JSON: %w", err)
 		}
 	case "yaml", "yml":
-		if err := yaml.Unmarshal(content, &data); err != nil {
-			return fmt.Errorf("invalid YAML: %w", err)
+		if err := yaml.Unmarshal(content, &oas); err != nil {
+			return oas_struct.OAS{}, fmt.Errorf("invalid YAML: %w", err)
 		}
 	default:
-		return fmt.Errorf("unsupported file extension: %s", ext)
+		return oas_struct.OAS{}, fmt.Errorf("unsupported file extension: %s", ext)
 	}
 
-	requiredFields := []string{"openapi", "info", "paths"}
-	for _, field := range requiredFields {
-		if _, ok := data[field]; !ok {
-			return fmt.Errorf("missing required OAS field: %s", field)
-		}
+	if oas.OpenAPI == "" {
+		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: openapi")
+	}
+	if oas.Info.Title == "" {
+		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: info")
+	}
+	if len(oas.Paths) == 0 {
+		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: paths")
 	}
 
-	return nil
+	return oas, nil
 }
 
 func init() {
