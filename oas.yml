@@ -1,14 +1,26 @@
 openapi: 3.0.3
 info:
-  title: Hello API
+  title: Parmesan Test API
+  description: "A very basic Open API Spec to test Parmesan"
   version: 1.0.0
 servers:
   - url: http://localhost:8080
 paths:
   /hello:
     get:
-      summary: Say hello
+      tags:
+      - Hello World
+      summary: Says hello.
       description: Returns a greeting.
+      requestBody:
+        content: 
+        application/json:
+          schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "The name of the user"
       responses:
         '200':
           description: A successful greeting response
