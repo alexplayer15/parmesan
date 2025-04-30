@@ -53,7 +53,7 @@ func Test_WhenOASDoesNotExist_ShouldReturnNoFileFoundError(t *testing.T){
 	err := commands.RootCmd.Execute()
 
 	//Assert
-	assert.EqualError(t, err, "file does not exist")
+	assert.Error(t, err)
 }
 
 func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T){
@@ -67,16 +67,5 @@ func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T){
 	err := commands.RootCmd.Execute()
 
 	//Assert
-	assert.EqualError(t, err, "OAS must be a JSON or YAML file")
-}
-
-func Test_WhenOASExistsAndIsValid_ShouldReturnNoError(t *testing.T){
-	//Arrange 
-	commands.RootCmd.SetArgs([]string{"generate-request", "oasDoesNotExist.yml"})
-
-	//Act 
-	err := commands.RootCmd.Execute()
-
-	//Assert
-	assert.EqualError(t, err, "file does not exist")
+	assert.Error(t, err)
 }

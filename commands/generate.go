@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"encoding/json"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 )
@@ -36,9 +37,9 @@ func validateOasArgument(file string) error {
 	if fileExistsErr != nil {
 		return fileExistsErr
 	}
-	fileExtensionErr := verifyFileExtension(file)
-	if fileExtensionErr != nil {
-		return fileExtensionErr
+	fileParseErr := verifyFileParsable(file)
+	if fileParseErr != nil {
+		return fileParseErr
 	}
 	return nil
 }
@@ -57,18 +58,33 @@ func verifyIfFileExists(file string) error {
 	return nil
 }
 
-func verifyFileExtension(file string) error {
-	allowedExtensions := []string{".yml", ".yaml", ".json"}
-
-	ext := strings.ToLower(filepath.Ext(file))
-
-	for _, allowed := range allowedExtensions {
-		if ext == allowed {
-			return nil
-		}
+func verifyFileParsable(file string) error {
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	return fmt.Errorf("OAS must be a JSON or YAML file")
+	ext := filepath.Ext(file)
+	if len(ext) > 0 && ext[0] == '.' {
+		ext = ext[1:]
+	}
+
+	var data map[string]interface{}
+
+	switch ext {
+	case "json":
+		if err := json.Unmarshal(content, &data); err != nil {
+			return fmt.Errorf("invalid JSON: %w", err)
+		}
+	case "yaml", "yml":
+		if err := yaml.Unmarshal(content, &data); err != nil {
+			return fmt.Errorf("invalid YAML: %w", err)
+		}
+	default:
+		return fmt.Errorf("OAS must be a JSON or YAML file. You provided a %s file", ext)
+	}
+
+	return nil
 }
 
 func init() {
