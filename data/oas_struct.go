@@ -1,16 +1,5 @@
 package oas_struct
 
-type Parameter struct {
-    Name        string `json:"name" yaml:"name"`
-    In          string `json:"in" yaml:"in"` // Can be "header", "query", "path", or "cookie"
-    Description string `json:"description" yaml:"description"`
-    Required    bool   `json:"required" yaml:"required"`
-    Schema      struct {
-        Type string `json:"type" yaml:"type"`
-    } `json:"schema" yaml:"schema"`
-    Example string `json:"example" yaml:"example"`
-}
-
 type Property struct {
     Type        string `json:"type" yaml:"type"`
     Description string `json:"description" yaml:"description"`
@@ -18,8 +7,9 @@ type Property struct {
 }
 
 type Schema struct {
-    Type       string              `json:"type" yaml:"type"`
-    Properties map[string]Property `json:"properties" yaml:"properties"`
+    Ref        string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+    Type       string              `json:"type,omitempty" yaml:"type,omitempty"`
+    Properties map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
 
 type Content struct {
@@ -30,11 +20,20 @@ type RequestBody struct {
     Content map[string]Content `json:"content" yaml:"content"`
 }
 
+type Parameter struct {
+    Name        string `json:"name" yaml:"name"`
+    In          string `json:"in" yaml:"in"`
+    Description string `json:"description" yaml:"description"`
+    Required    bool   `json:"required" yaml:"required"`
+    Schema      Schema `json:"schema" yaml:"schema"`
+    Example     string `json:"example" yaml:"example"`
+}
+
 type Method struct {
     Summary     string      `json:"summary" yaml:"summary"`
     Description string      `json:"description" yaml:"description"`
+    Parameters  []Parameter `json:"parameters" yaml:"parameters"`
     RequestBody RequestBody `json:"requestBody" yaml:"requestBody"`
-	Parameters  []Parameter `json:"parameters" yaml:"parameters"`
 }
 
 type Server struct {
@@ -42,14 +41,19 @@ type Server struct {
 }
 
 type Info struct {
-	Title string 
-	Description string 
-	Version string
+    Title       string `json:"title" yaml:"title"`
+    Description string `json:"description" yaml:"description"`
+    Version     string `json:"version" yaml:"version"`
+}
+
+type Components struct {
+    Schemas map[string]Schema `json:"schemas" yaml:"schemas"`
 }
 
 type OAS struct {
-    OpenAPI string                         `json:"openapi" yaml:"openapi"`
-    Info    Info
-    Servers []Server
-    Paths   map[string]map[string]Method    `json:"paths" yaml:"paths"`
+    OpenAPI    string                         `json:"openapi" yaml:"openapi"`
+    Info       Info                           `json:"info" yaml:"info"`
+    Servers    []Server                       `json:"servers" yaml:"servers"`
+    Paths      map[string]map[string]Method    `json:"paths" yaml:"paths"`
+    Components Components                     `json:"components" yaml:"components"`
 }
