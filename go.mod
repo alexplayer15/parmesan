@@ -1,4 +1,4 @@
-module github.com/alexp/parmesan
+module github.com/alexplayer15/parmesan
 
 go 1.24.2
 
