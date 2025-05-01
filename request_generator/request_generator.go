@@ -14,25 +14,40 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 	}
 
 	serverURL := oas.Servers[0].URL
-	httpRequests := ""
-
-	for path, methods := range oas.Paths {
-		httpRequests += generateRequestForPath(path, methods, serverURL, oas)
+	if serverURL == "" {
+		return "", fmt.Errorf("server URL is empty")
 	}
 
-	return httpRequests, nil
+	var httpRequests strings.Builder
+
+	for path, methods := range oas.Paths {
+		fullURL := joinURL(serverURL, path)
+		httpRequests.WriteString(generateRequestForPath(fullURL, methods, path, oas))
+	}
+
+	return httpRequests.String(), nil
 }
 
-func generateRequestForPath(path string,
+func joinURL(baseURL, path string) string {
+	if strings.HasSuffix(baseURL, "/") {
+		baseURL = strings.TrimSuffix(baseURL, "/")
+	}
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return baseURL + path
+}
+
+func generateRequestForPath(fullURL string,
 	methods map[string]oas_struct.Method,
-	serverURL string,
+	path string,
 	oas oas_struct.OAS) string {
 
 	var httpRequest string
 	httpRequest += fmt.Sprintf("### Path: %s\n", path)
 
 	for method, methodData := range methods {
-		httpRequest += generateHttpRequestForMethod(method, methodData, path, serverURL, oas)
+		httpRequest += generateHttpRequestForMethod(method, methodData, fullURL, oas)
 	}
 
 	return httpRequest
@@ -40,12 +55,11 @@ func generateRequestForPath(path string,
 
 func generateHttpRequestForMethod(method string,
 	methodData oas_struct.Method,
-	path,
-	serverURL string,
+	fullURL string,
 	oas oas_struct.OAS) string {
 
 	httpRequest := fmt.Sprintf("#### Summary: %s\n", methodData.Summary)
-	httpRequest += fmt.Sprintf("%s %s%s\n", strings.ToUpper(method), serverURL, path)
+	httpRequest += fmt.Sprintf("%s %s\n", strings.ToUpper(method), fullURL)
 
 	httpRequest += handleHeaders(methodData.Parameters)
 	httpRequest += "Content-Type: application/json\n\n"
