@@ -1,9 +1,10 @@
 package oas_struct
 
 type Property struct {
-	Type        string `json:"type" yaml:"type"`
-	Description string `json:"description" yaml:"description"`
-	Example     any    `json:"example" yaml:"example"`
+	Type        string  `json:"type" yaml:"type"`
+	Description string  `json:"description" yaml:"description"`
+	Example     any     `json:"example" yaml:"example"`
+	Items       *Schema `json:"items,omitempty" yaml:"items,omitempty"`
 }
 
 type Schema struct {

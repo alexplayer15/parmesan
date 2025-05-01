@@ -86,7 +86,7 @@ func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS) s
 			schema = resolvedSchema
 		}
 
-		body = generateJsonBody(schema)
+		body = generateJsonBody(schema, oas)
 	}
 	return body
 }
@@ -105,12 +105,12 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
-func generateJsonBody(schema oas_struct.Schema) string {
+func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	var body string
 	if schema.Type == "object" {
 		body = "{\n"
 		for propName, prop := range schema.Properties {
-			body += formatJsonProperty(propName, prop)
+			body += formatJsonProperty(propName, prop, oas)
 		}
 
 		if len(schema.Properties) > 0 {
@@ -121,30 +121,69 @@ func generateJsonBody(schema oas_struct.Schema) string {
 	return body
 }
 
-func formatJsonProperty(propName string, prop oas_struct.Property) string {
-	if prop.Example == nil {
-		return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+	if prop.Example != nil {
+		switch v := prop.Example.(type) {
+		case string:
+			return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
+		case int:
+			return fmt.Sprintf("  \"%s\": %d,\n", propName, v)
+		case []interface{}:
+			formattedItems := []string{}
+			for _, item := range v {
+				switch val := item.(type) {
+				case string:
+					formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", val))
+				case int, int64, float64:
+					formattedItems = append(formattedItems, fmt.Sprintf("%v", val))
+				case map[string]interface{}:
+					objFields := []string{}
+					for key, value := range val {
+						objFields = append(objFields, fmt.Sprintf("\"%s\": \"%v\"", key, value))
+					}
+					formattedItems = append(formattedItems, fmt.Sprintf("{%s}", strings.Join(objFields, ", ")))
+				default:
+					formattedItems = append(formattedItems, fmt.Sprintf("\"%v\"", val))
+				}
+			}
+			return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
+		default:
+			return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, v)
+		}
 	}
 
-	switch v := prop.Example.(type) {
-	case string:
-		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
-	case int:
-		return fmt.Sprintf("  \"%s\": %d,\n", propName, v)
-	case []interface{}:
-		formattedItems := []string{}
-		for _, item := range v {
-			switch val := item.(type) {
-			case string:
-				formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", val))
-			case int, int64, float64:
-				formattedItems = append(formattedItems, fmt.Sprintf("%v", val))
-			default:
-				formattedItems = append(formattedItems, fmt.Sprintf("\"%v\"", val))
+	if prop.Type == "array" && prop.Items != nil {
+		if prop.Items.Ref != "" {
+
+			resolvedSchema, err := resolveRef(prop.Items.Ref, oas)
+			if err == nil {
+				objectBody := generateJsonBody(resolvedSchema, oas)
+				objectBody = strings.TrimSpace(objectBody)
+
+				indentedObjectBody := indentJson(objectBody, 4)
+				return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 			}
+		} else if prop.Items.Type == "object" {
+
+			objectBody := generateJsonBody(*prop.Items, oas)
+			objectBody = strings.TrimSpace(objectBody)
+
+			indentedObjectBody := indentJson(objectBody, 4)
+			return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 		}
-		return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
-	default:
-		return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, v)
+		// Just empty array if no further details
+		return fmt.Sprintf("  \"%s\": [],\n", propName)
 	}
+
+	// Final fallback
+	return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+}
+
+func indentJson(json string, spaces int) string {
+	lines := strings.Split(json, "\n")
+	indent := strings.Repeat(" ", spaces)
+	for i, line := range lines {
+		lines[i] = indent + line
+	}
+	return strings.Join(lines, "\n")
 }
