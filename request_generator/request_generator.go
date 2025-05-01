@@ -130,8 +130,20 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	// Default fallback
-	return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+	// Type-aware fallback
+	switch prop.Type {
+	case "string":
+		return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+	case "integer", "number":
+		return fmt.Sprintf("  \"%s\": 0,\n", propName)
+	case "boolean":
+		return fmt.Sprintf("  \"%s\": false,\n", propName)
+	case "object":
+		return fmt.Sprintf("  \"%s\": {},\n", propName)
+	default:
+		// Unknown type fallback
+		return fmt.Sprintf("  \"%s\": null,\n", propName)
+	}
 }
 
 func formatExampleProperty(propName string, example any) string {
