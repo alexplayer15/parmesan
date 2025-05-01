@@ -131,11 +131,20 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	return getFallbackValue(propName, prop)
+	return getFallbackValue(propName, prop, oas)
 
 }
 
-func getFallbackValue(propName string, prop oas_struct.Property) string {
+func getFallbackValue(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+
+	if prop.Ref != "" {
+		referredSchema, err := resolveRef(prop.Ref, oas)
+		if err == nil && referredSchema.Default != nil {
+			// If a default value is defined in the referenced schema, use it
+			return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default)
+		}
+	}
+
 	switch prop.Type {
 	case "string":
 		switch prop.Format {
@@ -157,35 +166,36 @@ func getFallbackValue(propName string, prop oas_struct.Property) string {
 		return fmt.Sprintf("  \"%s\": null,\n", propName)
 	}
 }
+
 func formatExampleProperty(propName string, example any) string {
 	switch v := example.(type) {
-	case string:
-		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
-	case int:
-		return fmt.Sprintf("  \"%s\": %d,\n", propName, v)
-	case time.Time:
-		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v.Format("2006-01-02"))
 	case []interface{}:
 		formattedItems := []string{}
 		for _, item := range v {
-			switch val := item.(type) {
-			case string:
-				formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", val))
-			case int, int64, float64:
-				formattedItems = append(formattedItems, fmt.Sprintf("%v", val))
-			case map[string]interface{}:
-				objFields := []string{}
-				for key, value := range val {
-					objFields = append(objFields, fmt.Sprintf("\"%s\": \"%v\"", key, value))
-				}
-				formattedItems = append(formattedItems, fmt.Sprintf("{%s}", strings.Join(objFields, ", ")))
-			default:
-				formattedItems = append(formattedItems, fmt.Sprintf("\"%v\"", val))
-			}
+			formattedItems = append(formattedItems, formatExampleValue(item))
 		}
 		return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
 	default:
-		return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, v)
+		return fmt.Sprintf("  \"%s\": %s,\n", propName, formatExampleValue(v))
+	}
+}
+
+func formatExampleValue(v interface{}) string {
+	switch val := v.(type) {
+	case string:
+		return fmt.Sprintf("\"%s\"", val)
+	case int, int64, float64:
+		return fmt.Sprintf("%v", val)
+	case time.Time:
+		return fmt.Sprintf("\"%s\"", val.Format("2006-01-02"))
+	case map[string]interface{}:
+		objFields := []string{}
+		for key, value := range val {
+			objFields = append(objFields, fmt.Sprintf("\"%s\": \"%v\"", key, value))
+		}
+		return fmt.Sprintf("{%s}", strings.Join(objFields, ", "))
+	default:
+		return fmt.Sprintf("\"%v\"", val)
 	}
 }
 

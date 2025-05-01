@@ -6,6 +6,7 @@ type Property struct {
 	Description string  `json:"description" yaml:"description"`
 	Example     any     `json:"example" yaml:"example"`
 	Items       *Schema `json:"items,omitempty" yaml:"items,omitempty"`
+	Ref         string  `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 }
 
 type Schema struct {
@@ -13,6 +14,7 @@ type Schema struct {
 	Type       string              `json:"type,omitempty" yaml:"type,omitempty"`
 	Properties map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Example    any                 `json:"example" yaml:"example"`
+	Default    any                 `json:"default" yaml:"default"`
 }
 
 type Content struct {
