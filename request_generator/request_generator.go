@@ -123,25 +123,28 @@ func generateJsonBody(schema oas_struct.Schema) string {
 
 func formatJsonProperty(propName string, prop oas_struct.Property) string {
 	if prop.Example == nil {
-		// If no example, return a default string
 		return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
 	}
 
 	switch v := prop.Example.(type) {
 	case string:
 		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
+	case int:
+		return fmt.Sprintf("  \"%s\": %d,\n", propName, v)
 	case []interface{}:
-
 		formattedItems := []string{}
 		for _, item := range v {
-
-			if strItem, ok := item.(string); ok {
-				formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", strItem))
+			switch val := item.(type) {
+			case string:
+				formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", val))
+			case int, int64, float64:
+				formattedItems = append(formattedItems, fmt.Sprintf("%v", val))
+			default:
+				formattedItems = append(formattedItems, fmt.Sprintf("\"%v\"", val))
 			}
 		}
 		return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
 	default:
-
 		return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, v)
 	}
 }
