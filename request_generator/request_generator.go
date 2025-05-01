@@ -123,42 +123,52 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 }
 
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+	// If the property itself has an example, use it first
 	if prop.Example != nil {
 		return formatExampleProperty(propName, prop.Example)
 	}
 
-	// First, resolve any $ref
+	// Handle $ref
 	if prop.Ref != "" {
 		referredSchema, err := resolveRef(prop.Ref, oas)
-		propFromSchema := oas_struct.Property{
-			Type:    referredSchema.Type,
-			Items:   referredSchema.Items,
-			Example: referredSchema.Example,
-		}
 		if err == nil {
-			// After resolving, now handle if the referred schema is an array or has an example
+			// If the referred schema has an example, use it
 			if referredSchema.Example != nil {
 				return formatExampleProperty(propName, referredSchema.Example)
 			}
 
-			if referredSchema.Type == "array" && referredSchema.Items != nil {
+			// Handle referred schema based on type
+			switch referredSchema.Type {
+			case "array":
+				propFromSchema := oas_struct.Property{
+					Type:  referredSchema.Type,
+					Items: referredSchema.Items,
+				}
 				return formatArrayProperty(propName, propFromSchema, oas)
-			}
 
-			if referredSchema.Default != nil {
-				return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default)
-			}
+			case "object":
+				objectBody := generateJsonBody(referredSchema, oas)
+				objectBody = strings.TrimSpace(objectBody)
+				indentedObjectBody := indentJson(objectBody, 2)
+				return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody)
 
-			// Otherwise, fallback
-			return getFallbackValue(propName, propFromSchema, oas)
+			default:
+				if referredSchema.Default != nil {
+					return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default)
+				}
+				return getFallbackValue(propName, oas_struct.Property{
+					Type: referredSchema.Type,
+				}, oas)
+			}
 		}
 	}
 
-	// If no $ref, normal prop type check
+	// Handle normal array types
 	if prop.Type == "array" && prop.Items != nil {
 		return formatArrayProperty(propName, prop, oas)
 	}
 
+	// If no example, no ref, fallback to normal type
 	return getFallbackValue(propName, prop, oas)
 }
 
