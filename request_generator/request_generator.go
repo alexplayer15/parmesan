@@ -123,21 +123,25 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 }
 
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
-	// If the property itself has an example, use it first
 	if prop.Example != nil {
 		return formatExampleProperty(propName, prop.Example)
+	}
+
+	// Handle oneOf
+	if prop.OneOf != nil && len(prop.OneOf) > 0 {
+		firstOption := prop.OneOf[0]
+		// Pretend that the property is the first oneOf option
+		return formatJsonProperty(propName, firstOption, oas)
 	}
 
 	// Handle $ref
 	if prop.Ref != "" {
 		referredSchema, err := resolveRef(prop.Ref, oas)
 		if err == nil {
-			// If the referred schema has an example, use it
 			if referredSchema.Example != nil {
 				return formatExampleProperty(propName, referredSchema.Example)
 			}
 
-			// Handle referred schema based on type
 			switch referredSchema.Type {
 			case "array":
 				propFromSchema := oas_struct.Property{
@@ -163,12 +167,10 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		}
 	}
 
-	// Handle normal array types
 	if prop.Type == "array" && prop.Items != nil {
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	// If no example, no ref, fallback to normal type
 	return getFallbackValue(propName, prop, oas)
 }
 
