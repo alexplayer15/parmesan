@@ -15,6 +15,7 @@ type Schema struct {
 	Properties map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Example    any                 `json:"example" yaml:"example"`
 	Default    any                 `json:"default" yaml:"default"`
+	Items      *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
 }
 
 type Content struct {

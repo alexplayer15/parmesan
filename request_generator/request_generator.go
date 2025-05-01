@@ -127,23 +127,42 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatExampleProperty(propName, prop.Example)
 	}
 
+	// First, resolve any $ref
+	if prop.Ref != "" {
+		referredSchema, err := resolveRef(prop.Ref, oas)
+		propFromSchema := oas_struct.Property{
+			Type:    referredSchema.Type,
+			Items:   referredSchema.Items,
+			Example: referredSchema.Example,
+		}
+		if err == nil {
+			// After resolving, now handle if the referred schema is an array or has an example
+			if referredSchema.Example != nil {
+				return formatExampleProperty(propName, referredSchema.Example)
+			}
+
+			if referredSchema.Type == "array" && referredSchema.Items != nil {
+				return formatArrayProperty(propName, propFromSchema, oas)
+			}
+
+			if referredSchema.Default != nil {
+				return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default)
+			}
+
+			// Otherwise, fallback
+			return getFallbackValue(propName, propFromSchema, oas)
+		}
+	}
+
+	// If no $ref, normal prop type check
 	if prop.Type == "array" && prop.Items != nil {
 		return formatArrayProperty(propName, prop, oas)
 	}
 
 	return getFallbackValue(propName, prop, oas)
-
 }
 
 func getFallbackValue(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
-
-	if prop.Ref != "" {
-		referredSchema, err := resolveRef(prop.Ref, oas)
-		if err == nil && referredSchema.Default != nil {
-			// If a default value is defined in the referenced schema, use it
-			return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default)
-		}
-	}
 
 	switch prop.Type {
 	case "string":
