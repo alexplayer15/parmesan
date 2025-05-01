@@ -3,6 +3,7 @@ package request_generator
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	oas_struct "github.com/alexplayer15/parmesan/data"
 )
@@ -130,10 +131,21 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	// Type-aware fallback
+	return getFallbackValue(propName, prop)
+
+}
+
+func getFallbackValue(propName string, prop oas_struct.Property) string {
 	switch prop.Type {
 	case "string":
-		return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+		switch prop.Format {
+		case "date":
+			return fmt.Sprintf("  \"%s\": \"2022-01-01\",\n", propName)
+		case "date-time":
+			return fmt.Sprintf("  \"%s\": \"2022-01-01T00:00:00Z\",\n", propName)
+		default:
+			return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
+		}
 	case "integer", "number":
 		return fmt.Sprintf("  \"%s\": 0,\n", propName)
 	case "boolean":
@@ -145,13 +157,14 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return fmt.Sprintf("  \"%s\": null,\n", propName)
 	}
 }
-
 func formatExampleProperty(propName string, example any) string {
 	switch v := example.(type) {
 	case string:
 		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
 	case int:
 		return fmt.Sprintf("  \"%s\": %d,\n", propName, v)
+	case time.Time:
+		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v.Format("2006-01-02"))
 	case []interface{}:
 		formattedItems := []string{}
 		for _, item := range v {
