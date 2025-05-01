@@ -1,15 +1,17 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
-	"encoding/json"
+	"strings"
+
 	"gopkg.in/yaml.v3"
 
-	"github.com/spf13/cobra"
-	"github.com/alexplayer15/parmesan/data"
+	oas_struct "github.com/alexplayer15/parmesan/data"
 	"github.com/alexplayer15/parmesan/request_generator"
+	"github.com/spf13/cobra"
 )
 
 var GenerateRequestCmd = &cobra.Command{
@@ -28,12 +30,20 @@ var GenerateRequestCmd = &cobra.Command{
 		}
 
 		httpRequest, err := request_generator.GenerateHttpRequest(oas)
-		filename := filepath.Join(".", "request.http")
-		os.WriteFile(filename, []byte(httpRequest), 0644)
 		if err != nil {
-		return fmt.Errorf("failed to write HTTP file: %w", err)
+			return fmt.Errorf("failed to generate HTTP request: %w", err)
 		}
-		
+
+		baseName := filepath.Base(file)
+		ext := filepath.Ext(baseName)
+		nameWithoutExt := strings.TrimSuffix(baseName, ext)
+		outputFile := nameWithoutExt + ".http"
+
+		os.WriteFile(outputFile, []byte(httpRequest), 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write HTTP file: %w", err)
+		}
+
 		return nil
 	},
 }
@@ -90,5 +100,3 @@ func ReadOASFile(file string) (oas_struct.OAS, error) {
 
 	return oas, nil
 }
-
-

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/alexplayer15/parmesan/data"
+	oas_struct "github.com/alexplayer15/parmesan/data"
 )
 
 func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
@@ -22,9 +22,9 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 	return httpRequests, nil
 }
 
-func generateRequestForPath(path string, 
-	methods map[string]oas_struct.Method, 
-	serverURL string, 
+func generateRequestForPath(path string,
+	methods map[string]oas_struct.Method,
+	serverURL string,
 	oas oas_struct.OAS) string {
 
 	var httpRequest string
@@ -37,9 +37,9 @@ func generateRequestForPath(path string,
 	return httpRequest
 }
 
-func generateHttpRequestForMethod(method string, 
-	methodData oas_struct.Method, 
-	path, 
+func generateHttpRequestForMethod(method string,
+	methodData oas_struct.Method,
+	path,
 	serverURL string,
 	oas oas_struct.OAS) string {
 
@@ -80,7 +80,7 @@ func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS) s
 		if schema.Ref != "" {
 			resolvedSchema, err := resolveRef(schema.Ref, oas)
 			if err != nil {
-				// fallback if error
+
 				return ""
 			}
 			schema = resolvedSchema
@@ -105,7 +105,6 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
-
 func generateJsonBody(schema oas_struct.Schema) string {
 	var body string
 	if schema.Type == "object" {
@@ -123,10 +122,26 @@ func generateJsonBody(schema oas_struct.Schema) string {
 }
 
 func formatJsonProperty(propName string, prop oas_struct.Property) string {
-	exampleValue := "example value"
-	if prop.Example != "" {
-		exampleValue = prop.Example
+	if prop.Example == nil {
+		// If no example, return a default string
+		return fmt.Sprintf("  \"%s\": \"example value\",\n", propName)
 	}
-	return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, exampleValue)
-}
 
+	switch v := prop.Example.(type) {
+	case string:
+		return fmt.Sprintf("  \"%s\": \"%s\",\n", propName, v)
+	case []interface{}:
+
+		formattedItems := []string{}
+		for _, item := range v {
+
+			if strItem, ok := item.(string); ok {
+				formattedItems = append(formattedItems, fmt.Sprintf("\"%s\"", strItem))
+			}
+		}
+		return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
+	default:
+
+		return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, v)
+	}
+}
