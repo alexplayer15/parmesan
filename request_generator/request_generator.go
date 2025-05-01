@@ -128,7 +128,7 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 	}
 
 	// Handle oneOf
-	if prop.OneOf != nil && len(prop.OneOf) > 0 {
+	if len(prop.OneOf) > 0 {
 		firstOption := prop.OneOf[0]
 		// Pretend that the property is the first oneOf option
 		return formatJsonProperty(propName, firstOption, oas)
@@ -162,7 +162,7 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 				}
 				return getFallbackValue(propName, oas_struct.Property{
 					Type: referredSchema.Type,
-				}, oas)
+				})
 			}
 		}
 	}
@@ -171,10 +171,10 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	return getFallbackValue(propName, prop, oas)
+	return getFallbackValue(propName, prop)
 }
 
-func getFallbackValue(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+func getFallbackValue(propName string, prop oas_struct.Property) string {
 
 	switch prop.Type {
 	case "string":
