@@ -11,6 +11,7 @@ type Schema struct {
 	Ref        string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 	Type       string              `json:"type,omitempty" yaml:"type,omitempty"`
 	Properties map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
+	Example    any                 `json:"example" yaml:"example"`
 }
 
 type Content struct {
