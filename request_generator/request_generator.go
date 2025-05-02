@@ -117,16 +117,61 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
+func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	combined := oas_struct.Schema{
+		Type:       "object",
+		Properties: make(map[string]oas_struct.Property),
+	}
+
+	// Start with the schema's own properties
+	for name, prop := range schema.Properties {
+		combined.Properties[name] = prop
+	}
+
+	// Now process each allOf component
+	for _, item := range schema.AllOf {
+		if item.Ref != "" {
+			resolved, err := resolveRef(item.Ref, oas)
+			if err != nil {
+				return combined, err
+			}
+			// Recursive expand if nested allOf
+			expanded, err := expandAllOf(resolved, oas)
+			if err != nil {
+				return combined, err
+			}
+			for name, prop := range expanded.Properties {
+				combined.Properties[name] = prop
+			}
+		} else {
+			// Inline object inside allOf
+			for name, prop := range item.Properties {
+				combined.Properties[name] = prop
+			}
+		}
+	}
+
+	return combined, nil
+}
+
 func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	var body string
+
+	// Handle allOf
+	if len(schema.AllOf) > 0 {
+		expandedSchema, err := expandAllOf(schema, oas)
+		if err == nil {
+			schema = expandedSchema
+		}
+	}
+
 	if schema.Type == "object" {
 		body = "{\n"
 		for propName, prop := range schema.Properties {
 			body += formatJsonProperty(propName, prop, oas)
 		}
-
 		if len(schema.Properties) > 0 {
-			body = body[:len(body)-2] + "\n"
+			body = body[:len(body)-2] + "\n" // remove trailing comma
 		}
 		body += "}\n"
 	}
@@ -242,12 +287,20 @@ func formatExampleValue(v interface{}) string {
 }
 
 func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+
 	if prop.Items.Ref != "" {
 		resolvedSchema, err := resolveRef(prop.Items.Ref, oas)
 		if err == nil {
 			if resolvedSchema.Example != nil {
 				if exampleStr, ok := resolvedSchema.Example.(string); ok {
 					return fmt.Sprintf("  \"%s\": [\"%s\"],\n", propName, exampleStr)
+				}
+			}
+
+			if len(resolvedSchema.AllOf) > 0 {
+				expanded, err := expandAllOf(resolvedSchema, oas)
+				if err == nil {
+					resolvedSchema = expanded
 				}
 			}
 
@@ -265,6 +318,12 @@ func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_stru
 }
 
 func generateObjectFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string {
+	if len(schema.AllOf) > 0 {
+		expanded, err := expandAllOf(schema, oas)
+		if err == nil {
+			schema = expanded
+		}
+	}
 	var objectBody strings.Builder
 	objectBody.WriteString("{\n")
 	for propName, prop := range schema.Properties {
