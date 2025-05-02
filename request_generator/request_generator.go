@@ -278,7 +278,30 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
+	if prop.Type == "object" && len(prop.Properties) > 0 {
+		nestedBody := generateObjectFromProperties(prop.Properties, oas)
+		nestedBody = strings.TrimSpace(nestedBody)
+		indented := indentJson(nestedBody, 2)
+		return fmt.Sprintf("  \"%s\":%s,\n", propName, indented)
+	}
+
 	return getFallbackValue(propName, prop)
+}
+
+func generateObjectFromProperties(properties map[string]oas_struct.Property, oas oas_struct.OAS) string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for name, prop := range properties {
+		builder.WriteString(formatJsonProperty(name, prop, oas))
+	}
+	if len(properties) > 0 {
+		str := builder.String()
+		str = str[:len(str)-2] + "\n" // remove trailing comma
+		builder.Reset()
+		builder.WriteString(str)
+	}
+	builder.WriteString("}")
+	return builder.String()
 }
 
 func getFallbackValue(propName string, prop oas_struct.Property) string {

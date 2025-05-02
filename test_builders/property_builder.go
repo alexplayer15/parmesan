@@ -3,8 +3,9 @@ package test_builder
 import oas_struct "github.com/alexplayer15/parmesan/data"
 
 type PropertyBuilder struct {
-	name     string
-	property oas_struct.Property
+	name       string
+	property   oas_struct.Property
+	properties map[string]oas_struct.Property
 }
 
 func NewPropertyBuilder() *PropertyBuilder {
@@ -33,6 +34,23 @@ func (b *PropertyBuilder) WithExample(example any) *PropertyBuilder {
 	return b
 }
 
+func (b *PropertyBuilder) WithItems(items *oas_struct.Schema) *PropertyBuilder {
+	b.property.Items = items
+	return b
+}
+
+func (b *PropertyBuilder) AddProperty(name string, prop oas_struct.Property) *PropertyBuilder {
+	if b.properties == nil {
+		b.properties = make(map[string]oas_struct.Property)
+	}
+	b.properties[name] = prop
+	return b
+}
+
 func (b *PropertyBuilder) Build() (string, oas_struct.Property) {
+
+	if len(b.properties) > 0 {
+		b.property.Properties = b.properties
+	}
 	return b.name, b.property
 }
