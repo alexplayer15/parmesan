@@ -178,9 +178,54 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	return body
 }
 
+func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	combined := oas_struct.Schema{
+		Type:       "object",
+		Properties: make(map[string]oas_struct.Property),
+	}
+
+	// Start with property's own properties if any
+	for name, p := range prop.Properties {
+		combined.Properties[name] = p
+	}
+
+	for _, item := range prop.AllOf {
+		if item.Ref != "" {
+			resolved, err := resolveRef(item.Ref, oas)
+			if err != nil {
+				return combined, err
+			}
+			expanded, err := expandAllOf(resolved, oas)
+			if err != nil {
+				return combined, err
+			}
+			for name, p := range expanded.Properties {
+				combined.Properties[name] = p
+			}
+		} else {
+			for name, p := range item.Properties {
+				combined.Properties[name] = p
+			}
+		}
+	}
+
+	return combined, nil
+}
+
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
 	if prop.Example != nil {
 		return formatExampleProperty(propName, prop.Example)
+	}
+
+	if len(prop.AllOf) > 0 {
+		expandedSchema, err := expandAllOfProperty(prop, oas)
+		if err == nil {
+			// Now treat the expanded schema like a normal object
+			objectBody := generateObjectFromSchema(expandedSchema, oas)
+			objectBody = strings.TrimSpace(objectBody)
+			indentedObjectBody := indentJson(objectBody, 2)
+			return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody)
+		}
 	}
 
 	// Handle oneOf
