@@ -245,27 +245,40 @@ func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_stru
 	if prop.Items.Ref != "" {
 		resolvedSchema, err := resolveRef(prop.Items.Ref, oas)
 		if err == nil {
-			// Try to use example from resolved schema if available
 			if resolvedSchema.Example != nil {
 				if exampleStr, ok := resolvedSchema.Example.(string); ok {
 					return fmt.Sprintf("  \"%s\": [\"%s\"],\n", propName, exampleStr)
 				}
 			}
-			// No direct example, generate a full object
-			objectBody := generateJsonBody(resolvedSchema, oas)
-			objectBody = strings.TrimSpace(objectBody)
+
+			objectBody := generateObjectFromSchema(resolvedSchema, oas)
 			indentedObjectBody := indentJson(objectBody, 4)
 			return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 		}
 	} else if prop.Items.Type == "object" {
-
-		objectBody := generateJsonBody(*prop.Items, oas)
-		objectBody = strings.TrimSpace(objectBody)
+		objectBody := generateObjectFromSchema(*prop.Items, oas)
 		indentedObjectBody := indentJson(objectBody, 4)
 		return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 	}
 
 	return fmt.Sprintf("  \"%s\": [],\n", propName)
+}
+
+func generateObjectFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string {
+	var objectBody strings.Builder
+	objectBody.WriteString("{\n")
+	for propName, prop := range schema.Properties {
+		objectBody.WriteString(formatJsonProperty(propName, prop, oas))
+	}
+	if len(schema.Properties) > 0 {
+
+		objectStr := objectBody.String()
+		objectStr = objectStr[:len(objectStr)-2] + "\n"
+		objectBody.Reset()
+		objectBody.WriteString(objectStr)
+	}
+	objectBody.WriteString("}")
+	return objectBody.String()
 }
 
 func indentJson(json string, spaces int) string {
