@@ -1,12 +1,15 @@
 package oas_struct
 
 type Property struct {
-	Type        string  `json:"type" yaml:"type"`
-	Format      string  `json:"format,omitempty" yaml:"format,omitempty"`
-	Description string  `json:"description" yaml:"description"`
-	Example     any     `json:"example" yaml:"example"`
-	Items       *Schema `json:"items,omitempty" yaml:"items,omitempty"`
-	Ref         string  `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+	Type        string              `json:"type" yaml:"type"`
+	Format      string              `json:"format,omitempty" yaml:"format,omitempty"`
+	Description string              `json:"description" yaml:"description"`
+	Example     any                 `json:"example" yaml:"example"`
+	Items       *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
+	Ref         string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+	OneOf       []Property          `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AllOf       []Property          `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+	Properties  map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
 
 type Schema struct {
@@ -16,6 +19,8 @@ type Schema struct {
 	Example    any                 `json:"example" yaml:"example"`
 	Default    any                 `json:"default" yaml:"default"`
 	Items      *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
+	OneOf      []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AllOf      []Schema            `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 }
 
 type Content struct {

@@ -14,44 +14,55 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 	}
 
 	serverURL := oas.Servers[0].URL
-	httpRequests := ""
+	if serverURL == "" {
+		return "", fmt.Errorf("server URL is empty")
+	}
+
+	var httpRequests strings.Builder
 
 	for path, methods := range oas.Paths {
-		httpRequests += generateRequestForPath(path, methods, serverURL, oas)
+		fullURL := joinURL(serverURL, path)
+		generateRequestForPath(&httpRequests, fullURL, methods, path, oas)
 	}
 
-	return httpRequests, nil
+	return httpRequests.String(), nil
 }
 
-func generateRequestForPath(path string,
-	methods map[string]oas_struct.Method,
-	serverURL string,
-	oas oas_struct.OAS) string {
+func joinURL(baseURL, path string) string {
 
-	var httpRequest string
-	httpRequest += fmt.Sprintf("### Path: %s\n", path)
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return baseURL + path
+}
+
+func generateRequestForPath(builder *strings.Builder,
+	fullURL string,
+	methods map[string]oas_struct.Method,
+	path string,
+	oas oas_struct.OAS) {
+
+	builder.WriteString(fmt.Sprintf("### Path: %s\n", path))
 
 	for method, methodData := range methods {
-		httpRequest += generateHttpRequestForMethod(method, methodData, path, serverURL, oas)
+		generateHttpRequestForMethod(builder, method, methodData, fullURL, oas)
 	}
-
-	return httpRequest
 }
 
-func generateHttpRequestForMethod(method string,
+func generateHttpRequestForMethod(builder *strings.Builder,
+	method string,
 	methodData oas_struct.Method,
-	path,
-	serverURL string,
-	oas oas_struct.OAS) string {
+	fullURL string,
+	oas oas_struct.OAS) {
 
-	httpRequest := fmt.Sprintf("#### Summary: %s\n", methodData.Summary)
-	httpRequest += fmt.Sprintf("%s %s%s\n", strings.ToUpper(method), serverURL, path)
-
-	httpRequest += handleHeaders(methodData.Parameters)
-	httpRequest += "Content-Type: application/json\n\n"
-	httpRequest += handleRequestBody(methodData.RequestBody, oas)
-
-	return httpRequest + "\n\n"
+	builder.WriteString(fmt.Sprintf("#### Summary: %s\n", methodData.Summary))
+	builder.WriteString(fmt.Sprintf("%s %s\n", strings.ToUpper(method), fullURL))
+	builder.WriteString(handleHeaders(methodData.Parameters))
+	builder.WriteString("Content-Type: application/json\n\n")
+	builder.WriteString(handleRequestBody(methodData.RequestBody, oas))
+	builder.WriteString("\n\n")
 }
 
 func handleHeaders(parameters []oas_struct.Parameter) string {
@@ -106,14 +117,60 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
+func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	combined := oas_struct.Schema{
+		Type:       "object",
+		Properties: make(map[string]oas_struct.Property),
+	}
+
+	// Start with the schema's own properties
+	for name, prop := range schema.Properties {
+		combined.Properties[name] = prop
+	}
+
+	// Now process each allOf component
+	for _, item := range schema.AllOf {
+		if item.Ref != "" {
+			resolved, err := resolveRef(item.Ref, oas)
+			if err != nil {
+				return combined, err
+			}
+			// Recursive expand if nested allOf
+			expanded, err := expandAllOf(resolved, oas)
+			if err != nil {
+				return combined, err
+			}
+			for name, prop := range expanded.Properties {
+				combined.Properties[name] = prop
+			}
+		} else {
+			// Inline object inside allOf
+			for name, prop := range item.Properties {
+				combined.Properties[name] = prop
+			}
+		}
+	}
+
+	return combined, nil
+}
+
 func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	var body string
+
+	pickFirstOneOfIfExists(schema)
+
+	if len(schema.AllOf) > 0 {
+		expandedSchema, err := expandAllOf(schema, oas)
+		if err == nil {
+			schema = expandedSchema
+		}
+	}
+
 	if schema.Type == "object" {
 		body = "{\n"
 		for propName, prop := range schema.Properties {
 			body += formatJsonProperty(propName, prop, oas)
 		}
-
 		if len(schema.Properties) > 0 {
 			body = body[:len(body)-2] + "\n"
 		}
@@ -122,22 +179,76 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	return body
 }
 
+func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
+	if len(schema.OneOf) > 0 {
+		return schema.OneOf[0]
+	}
+	return schema
+}
+
+func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	combined := oas_struct.Schema{
+		Type:       "object",
+		Properties: make(map[string]oas_struct.Property),
+	}
+
+	// Start with property's own properties if any
+	for name, p := range prop.Properties {
+		combined.Properties[name] = p
+	}
+
+	for _, item := range prop.AllOf {
+		if item.Ref != "" {
+			resolved, err := resolveRef(item.Ref, oas)
+			if err != nil {
+				return combined, err
+			}
+			expanded, err := expandAllOf(resolved, oas)
+			if err != nil {
+				return combined, err
+			}
+			for name, p := range expanded.Properties {
+				combined.Properties[name] = p
+			}
+		} else {
+			for name, p := range item.Properties {
+				combined.Properties[name] = p
+			}
+		}
+	}
+
+	return combined, nil
+}
+
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
-	// If the property itself has an example, use it first
 	if prop.Example != nil {
 		return formatExampleProperty(propName, prop.Example)
+	}
+
+	if len(prop.AllOf) > 0 {
+		expandedSchema, err := expandAllOfProperty(prop, oas)
+		if err == nil {
+			objectBody := generateObjectFromSchema(expandedSchema, oas)
+			objectBody = strings.TrimSpace(objectBody)
+			indentedObjectBody := indentJson(objectBody, 2)
+			return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody)
+		}
+	}
+
+	if len(prop.OneOf) > 0 {
+		firstOption := prop.OneOf[0]
+		// Pretend that the property is the first oneOf option
+		return formatJsonProperty(propName, firstOption, oas)
 	}
 
 	// Handle $ref
 	if prop.Ref != "" {
 		referredSchema, err := resolveRef(prop.Ref, oas)
 		if err == nil {
-			// If the referred schema has an example, use it
 			if referredSchema.Example != nil {
 				return formatExampleProperty(propName, referredSchema.Example)
 			}
 
-			// Handle referred schema based on type
 			switch referredSchema.Type {
 			case "array":
 				propFromSchema := oas_struct.Property{
@@ -158,21 +269,19 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 				}
 				return getFallbackValue(propName, oas_struct.Property{
 					Type: referredSchema.Type,
-				}, oas)
+				})
 			}
 		}
 	}
 
-	// Handle normal array types
 	if prop.Type == "array" && prop.Items != nil {
 		return formatArrayProperty(propName, prop, oas)
 	}
 
-	// If no example, no ref, fallback to normal type
-	return getFallbackValue(propName, prop, oas)
+	return getFallbackValue(propName, prop)
 }
 
-func getFallbackValue(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+func getFallbackValue(propName string, prop oas_struct.Property) string {
 
 	switch prop.Type {
 	case "string":
@@ -229,30 +338,57 @@ func formatExampleValue(v interface{}) string {
 }
 
 func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) string {
+
 	if prop.Items.Ref != "" {
 		resolvedSchema, err := resolveRef(prop.Items.Ref, oas)
 		if err == nil {
-			// Try to use example from resolved schema if available
 			if resolvedSchema.Example != nil {
 				if exampleStr, ok := resolvedSchema.Example.(string); ok {
 					return fmt.Sprintf("  \"%s\": [\"%s\"],\n", propName, exampleStr)
 				}
 			}
-			// No direct example, generate a full object
-			objectBody := generateJsonBody(resolvedSchema, oas)
-			objectBody = strings.TrimSpace(objectBody)
+
+			if len(resolvedSchema.AllOf) > 0 {
+				expanded, err := expandAllOf(resolvedSchema, oas)
+				if err == nil {
+					resolvedSchema = expanded
+				}
+			}
+
+			objectBody := generateObjectFromSchema(resolvedSchema, oas)
 			indentedObjectBody := indentJson(objectBody, 4)
 			return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 		}
 	} else if prop.Items.Type == "object" {
-
-		objectBody := generateJsonBody(*prop.Items, oas)
-		objectBody = strings.TrimSpace(objectBody)
+		objectBody := generateObjectFromSchema(*prop.Items, oas)
 		indentedObjectBody := indentJson(objectBody, 4)
 		return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedObjectBody)
 	}
 
 	return fmt.Sprintf("  \"%s\": [],\n", propName)
+}
+
+func generateObjectFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string {
+	if len(schema.AllOf) > 0 {
+		expanded, err := expandAllOf(schema, oas)
+		if err == nil {
+			schema = expanded
+		}
+	}
+	var objectBody strings.Builder
+	objectBody.WriteString("{\n")
+	for propName, prop := range schema.Properties {
+		objectBody.WriteString(formatJsonProperty(propName, prop, oas))
+	}
+	if len(schema.Properties) > 0 {
+
+		objectStr := objectBody.String()
+		objectStr = objectStr[:len(objectStr)-2] + "\n"
+		objectBody.Reset()
+		objectBody.WriteString(objectStr)
+	}
+	objectBody.WriteString("}")
+	return objectBody.String()
 }
 
 func indentJson(json string, spaces int) string {
