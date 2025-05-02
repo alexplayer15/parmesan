@@ -22,50 +22,47 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 
 	for path, methods := range oas.Paths {
 		fullURL := joinURL(serverURL, path)
-		httpRequests.WriteString(generateRequestForPath(fullURL, methods, path, oas))
+		generateRequestForPath(&httpRequests, fullURL, methods, path, oas)
 	}
 
 	return httpRequests.String(), nil
 }
 
 func joinURL(baseURL, path string) string {
-	if strings.HasSuffix(baseURL, "/") {
-		baseURL = strings.TrimSuffix(baseURL, "/")
-	}
+
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
 	return baseURL + path
 }
 
-func generateRequestForPath(fullURL string,
+func generateRequestForPath(builder *strings.Builder,
+	fullURL string,
 	methods map[string]oas_struct.Method,
 	path string,
-	oas oas_struct.OAS) string {
+	oas oas_struct.OAS) {
 
-	var httpRequest string
-	httpRequest += fmt.Sprintf("### Path: %s\n", path)
+	builder.WriteString(fmt.Sprintf("### Path: %s\n", path))
 
 	for method, methodData := range methods {
-		httpRequest += generateHttpRequestForMethod(method, methodData, fullURL, oas)
+		generateHttpRequestForMethod(builder, method, methodData, fullURL, oas)
 	}
-
-	return httpRequest
 }
 
-func generateHttpRequestForMethod(method string,
+func generateHttpRequestForMethod(builder *strings.Builder,
+	method string,
 	methodData oas_struct.Method,
 	fullURL string,
-	oas oas_struct.OAS) string {
+	oas oas_struct.OAS) {
 
-	httpRequest := fmt.Sprintf("#### Summary: %s\n", methodData.Summary)
-	httpRequest += fmt.Sprintf("%s %s\n", strings.ToUpper(method), fullURL)
-
-	httpRequest += handleHeaders(methodData.Parameters)
-	httpRequest += "Content-Type: application/json\n\n"
-	httpRequest += handleRequestBody(methodData.RequestBody, oas)
-
-	return httpRequest + "\n\n"
+	builder.WriteString(fmt.Sprintf("#### Summary: %s\n", methodData.Summary))
+	builder.WriteString(fmt.Sprintf("%s %s\n", strings.ToUpper(method), fullURL))
+	builder.WriteString(handleHeaders(methodData.Parameters))
+	builder.WriteString("Content-Type: application/json\n\n")
+	builder.WriteString(handleRequestBody(methodData.RequestBody, oas))
+	builder.WriteString("\n\n")
 }
 
 func handleHeaders(parameters []oas_struct.Parameter) string {
