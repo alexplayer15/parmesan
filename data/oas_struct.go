@@ -19,7 +19,8 @@ type Schema struct {
 	Example    any                 `json:"example" yaml:"example"`
 	Default    any                 `json:"default" yaml:"default"`
 	Items      *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
-	AllOf      []Property          `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+	OneOf      []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AllOf      []Schema            `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 }
 
 type Content struct {

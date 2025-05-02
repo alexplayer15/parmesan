@@ -157,7 +157,8 @@ func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schem
 func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	var body string
 
-	// Handle allOf
+	pickFirstOneOfIfExists(schema)
+
 	if len(schema.AllOf) > 0 {
 		expandedSchema, err := expandAllOf(schema, oas)
 		if err == nil {
@@ -171,11 +172,18 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 			body += formatJsonProperty(propName, prop, oas)
 		}
 		if len(schema.Properties) > 0 {
-			body = body[:len(body)-2] + "\n" // remove trailing comma
+			body = body[:len(body)-2] + "\n"
 		}
 		body += "}\n"
 	}
 	return body
+}
+
+func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
+	if len(schema.OneOf) > 0 {
+		return schema.OneOf[0]
+	}
+	return schema
 }
 
 func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
@@ -220,7 +228,6 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 	if len(prop.AllOf) > 0 {
 		expandedSchema, err := expandAllOfProperty(prop, oas)
 		if err == nil {
-			// Now treat the expanded schema like a normal object
 			objectBody := generateObjectFromSchema(expandedSchema, oas)
 			objectBody = strings.TrimSpace(objectBody)
 			indentedObjectBody := indentJson(objectBody, 2)
@@ -228,7 +235,6 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		}
 	}
 
-	// Handle oneOf
 	if len(prop.OneOf) > 0 {
 		firstOption := prop.OneOf[0]
 		// Pretend that the property is the first oneOf option
