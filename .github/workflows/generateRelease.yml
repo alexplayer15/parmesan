@@ -4,9 +4,6 @@ run-name: 'Build #${{ github.run_number }} - ${{ github.event.head_commit.messag
 on:
   push:
     branches:
-    - "bugfix/*"
-    - "hotfix/*"
-    - "feature/**"
     - "main"
 
 permissions:
@@ -15,21 +12,19 @@ permissions:
   pull-requests: write
   actions: read
 
-
 jobs:  
   RunTests:
     name: Run Tests
     runs-on: ubuntu-latest
+    environment:
+      name: CI
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: '1.24.2' 
-
-    - name: Run Go Tests
-      run: go test ./test/...
+    - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v4
+      env:
+        GH_TOKEN: ${{ secrets.PARMESAN_TOKEN }}
