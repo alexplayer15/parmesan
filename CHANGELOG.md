@@ -1,3 +1,11 @@
+## [0.2.2](https://github.com/alexplayer15/parmesan/compare/v0.2.1...v0.2.2) (2025-05-03)
+
+
+### Bug Fixes
+
+* test semVar with new permissions take 2 ([78313b8](https://github.com/alexplayer15/parmesan/commit/78313b8fa7c50dbc40413bcdb1bd1c31802da58c))
+* test semVar with new permissions take 2 ([c131d76](https://github.com/alexplayer15/parmesan/commit/c131d7687630ca20e0b3d5ab483f138e5aa683fa))
+
 ## [0.2.1](https://github.com/alexplayer15/parmesan/compare/v0.2.0...v0.2.1) (2025-05-03)
 
 
