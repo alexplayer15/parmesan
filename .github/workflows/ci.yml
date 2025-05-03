@@ -20,6 +20,8 @@ jobs:
   RunTests:
     name: Run Tests
     runs-on: ubuntu-latest
+    environment:
+      name: CI
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -33,3 +35,8 @@ jobs:
 
     - name: Run Terratest
       run: go test ./test/...
+
+    - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v4
+      env:
+        GH_TOKEN: ${{ secrets.PARMESAN_TOKEN }}
