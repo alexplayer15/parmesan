@@ -78,9 +78,31 @@ func Test_WhenOASHasObjectProperty_ShouldReturnCorrectObjectInRequest(t *testing
 
 	result, err := request_generator.GenerateHttpRequest(oas)
 
+	//to do - change to test for structure also
 	assert.NoError(t, err)
 	assert.Contains(t, result, `"education"`)
 	assert.Contains(t, result, `"university": "University of Manchester"`)
 	assert.Contains(t, result, `"degree": "Chemical Engineering"`)
 	assert.Contains(t, result, `"grade": "2:1"`)
+}
+
+func TestWhenOASHasPropertyOfTypeStringWithFormatDateAndAnExample_ShouldReturnDate(t *testing.T) {
+	// Arrange
+	oas := test_data.BaseOAS()
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("birthday").
+		WithType("string").
+		WithFormat("date").
+		WithExample("2022-11-23").
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	//have a think about how much spacing matters. Test is fragile as stands
+	assert.Contains(t, result, `"birthday": "2022-11-23"`)
 }

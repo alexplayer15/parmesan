@@ -39,3 +39,59 @@ func AssertJSONHasArrayWithObject(t *testing.T, jsonString string, fieldName str
 		assert.True(t, exists, "object in array %s should contain key %s", fieldName, key)
 	}
 }
+
+func AssertJSONExamplesForObjectsInAnArray(t *testing.T, jsonString, fieldName string, expectedExamples map[string]any) {
+	t.Helper()
+
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	assert.NoError(t, err, "should unmarshal JSON successfully")
+
+	arrayField := resultBody[fieldName]
+	arr := arrayField.([]any)
+
+	firstItem := arr[0].(map[string]any)
+
+	for key, expectedValue := range expectedExamples {
+		actualValue, exists := firstItem[key]
+		assert.True(t, exists, "expected key %s to exist in object inside %s", key, fieldName)
+		assert.Equal(t, expectedValue, actualValue, "expected value for key %s in object inside %s to be %v, got %v", key, fieldName, expectedValue, actualValue)
+	}
+}
+
+func AssertJSONHasObject(t *testing.T, jsonString string, fieldName string, requiredKeys []string) {
+	t.Helper()
+
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	assert.NoError(t, err, "should unmarshal JSON successfully")
+
+	value, ok := resultBody[fieldName]
+	assert.True(t, ok, "field %s should exist", fieldName)
+
+	obj, ok := value.(map[string]any)
+	assert.True(t, ok, "field %s should be an object", fieldName)
+	assert.GreaterOrEqual(t, len(obj), 1, "object %s should have at least one item", fieldName)
+
+	for _, key := range requiredKeys {
+		_, exists := obj[key]
+		assert.True(t, exists, "object in array %s should contain key %s", fieldName, key)
+	}
+}
+
+func AssertJSONExamplesForObject(t *testing.T, jsonString, fieldName string, expectedExamples map[string]any) {
+	t.Helper()
+
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	assert.NoError(t, err, "should unmarshal JSON successfully")
+
+	objField := resultBody[fieldName]
+	obj := objField.(map[string]any)
+
+	for key, expectedValue := range expectedExamples {
+		actualValue, exists := obj[key]
+		assert.True(t, exists, "expected key %s to exist in object inside %s", key, fieldName)
+		assert.Equal(t, expectedValue, actualValue, "expected value for key %s in object inside %s to be %v, got %v", key, fieldName, expectedValue, actualValue)
+	}
+}

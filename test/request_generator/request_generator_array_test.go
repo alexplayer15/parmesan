@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexplayer15/parmesan/request_generator"
 	test_builder "github.com/alexplayer15/parmesan/test_builders"
+	"github.com/alexplayer15/parmesan/test_helpers"
 	test_data "github.com/alexplayer15/parmesan/test_oas_data"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,8 +83,13 @@ func Test_WhenOASHasArrayPropertyContainingAnObjectWithAnExample_ShouldReturnExa
 
 	//Assert
 	assert.NoError(t, err)
-	assert.Contains(t, result, `"education":`)
-	assert.Contains(t, result, `"university": "University of Manchester"`)
-	assert.Contains(t, result, `"degree": "Chemical Engineering"`)
-	assert.Contains(t, result, `"grade": "2:1"`)
+	assert.NoError(t, err)
+	body, err := test_helpers.ExtractBody(result)
+	assert.NoError(t, err)
+	test_helpers.AssertJSONHasArrayWithObject(t, body, "education", []string{"university", "degree", "grade"})
+	test_helpers.AssertJSONExamplesForObjectsInAnArray(t, body, "education", map[string]any{
+		"university": "University of Manchester",
+		"degree":     "Chemical Engineering",
+		"grade":      "2:1",
+	})
 }

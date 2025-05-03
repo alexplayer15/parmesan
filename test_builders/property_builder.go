@@ -46,6 +46,11 @@ func (b *PropertyBuilder) WithItemsRef(ref string) *PropertyBuilder {
 	return b
 }
 
+func (b *PropertyBuilder) WithFormat(format string) *PropertyBuilder {
+	b.property.Format = format
+	return b
+}
+
 func (b *PropertyBuilder) WithProperty(name string, prop oas_struct.Property) *PropertyBuilder {
 	if b.properties == nil {
 		b.properties = make(map[string]oas_struct.Property)
