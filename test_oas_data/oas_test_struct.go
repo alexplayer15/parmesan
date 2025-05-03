@@ -29,5 +29,8 @@ func BaseOAS() oas_struct.OAS {
 				},
 			},
 		},
+		Components: oas_struct.Components{
+			Schemas: map[string]oas_struct.Schema{},
+		},
 	}
 }

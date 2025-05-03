@@ -20,7 +20,7 @@ func (b *SchemaBuilder) WithType(schemaType string) *SchemaBuilder {
 	return b
 }
 
-func (b *SchemaBuilder) AddProperty(name string, property oas_struct.Property) *SchemaBuilder {
+func (b *SchemaBuilder) WithProperty(name string, property oas_struct.Property) *SchemaBuilder {
 	b.schema.Properties[name] = property
 	return b
 }

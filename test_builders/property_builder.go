@@ -39,11 +39,23 @@ func (b *PropertyBuilder) WithItems(items *oas_struct.Schema) *PropertyBuilder {
 	return b
 }
 
-func (b *PropertyBuilder) AddProperty(name string, prop oas_struct.Property) *PropertyBuilder {
+func (b *PropertyBuilder) WithItemsRef(ref string) *PropertyBuilder {
+	b.property.Items = &oas_struct.Schema{
+		Ref: ref,
+	}
+	return b
+}
+
+func (b *PropertyBuilder) WithProperty(name string, prop oas_struct.Property) *PropertyBuilder {
 	if b.properties == nil {
 		b.properties = make(map[string]oas_struct.Property)
 	}
 	b.properties[name] = prop
+	return b
+}
+
+func (b *PropertyBuilder) WithRef(ref string) *PropertyBuilder {
+	b.property.Ref = ref
 	return b
 }
 
