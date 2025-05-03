@@ -88,7 +88,6 @@ func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS) s
 	if content, ok := requestBody.Content["application/json"]; ok {
 		schema := content.Schema
 
-		// If schema is a $ref, resolve it
 		if schema.Ref != "" {
 			resolvedSchema, err := resolveRef(schema.Ref, oas)
 			if err != nil {
@@ -117,41 +116,11 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
-func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
-	combined := oas_struct.Schema{
-		Type:       "object",
-		Properties: make(map[string]oas_struct.Property),
+func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
+	if len(schema.OneOf) > 0 {
+		schema = schema.OneOf[0]
 	}
-
-	// Start with the schema's own properties
-	for name, prop := range schema.Properties {
-		combined.Properties[name] = prop
-	}
-
-	// Now process each allOf component
-	for _, item := range schema.AllOf {
-		if item.Ref != "" {
-			resolved, err := resolveRef(item.Ref, oas)
-			if err != nil {
-				return combined, err
-			}
-			// Recursive expand if nested allOf
-			expanded, err := expandAllOf(resolved, oas)
-			if err != nil {
-				return combined, err
-			}
-			for name, prop := range expanded.Properties {
-				combined.Properties[name] = prop
-			}
-		} else {
-			// Inline object inside allOf
-			for name, prop := range item.Properties {
-				combined.Properties[name] = prop
-			}
-		}
-	}
-
-	return combined, nil
+	return schema
 }
 
 func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
@@ -179,20 +148,12 @@ func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	return body
 }
 
-func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
-	if len(schema.OneOf) > 0 {
-		return schema.OneOf[0]
-	}
-	return schema
-}
-
 func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	combined := oas_struct.Schema{
 		Type:       "object",
 		Properties: make(map[string]oas_struct.Property),
 	}
 
-	// Start with property's own properties if any
 	for name, p := range prop.Properties {
 		combined.Properties[name] = p
 	}
@@ -236,9 +197,18 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 	}
 
 	if len(prop.OneOf) > 0 {
-		firstOption := prop.OneOf[0]
-		// Pretend that the property is the first oneOf option
-		return formatJsonProperty(propName, firstOption, oas)
+		selected := prop.OneOf[0]
+
+		if selected.Ref != "" {
+			if resolved, err := resolveRef(selected.Ref, oas); err == nil {
+				selected = resolved
+			}
+		}
+
+		objectBody := generateObjectFromSchema(selected, oas)
+		indented := indentJson(strings.TrimSpace(objectBody), 2)
+
+		return fmt.Sprintf("\"%s\": %s,\n", propName, indented)
 	}
 
 	// Handle $ref
@@ -278,7 +248,30 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatArrayProperty(propName, prop, oas)
 	}
 
+	if prop.Type == "object" && len(prop.Properties) > 0 {
+		nestedBody := generateObjectFromProperties(prop.Properties, oas)
+		nestedBody = strings.TrimSpace(nestedBody)
+		indented := indentJson(nestedBody, 2)
+		return fmt.Sprintf("  \"%s\":%s,\n", propName, indented)
+	}
+
 	return getFallbackValue(propName, prop)
+}
+
+func generateObjectFromProperties(properties map[string]oas_struct.Property, oas oas_struct.OAS) string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for name, prop := range properties {
+		builder.WriteString(formatJsonProperty(name, prop, oas))
+	}
+	if len(properties) > 0 {
+		str := builder.String()
+		str = str[:len(str)-2] + "\n"
+		builder.Reset()
+		builder.WriteString(str)
+	}
+	builder.WriteString("}")
+	return builder.String()
 }
 
 func getFallbackValue(propName string, prop oas_struct.Property) string {
@@ -398,4 +391,39 @@ func indentJson(json string, spaces int) string {
 		lines[i] = indent + line
 	}
 	return strings.Join(lines, "\n")
+}
+
+func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	combined := oas_struct.Schema{
+		Type:       "object",
+		Properties: make(map[string]oas_struct.Property),
+	}
+
+	for name, prop := range schema.Properties {
+		combined.Properties[name] = prop
+	}
+
+	for _, item := range schema.AllOf {
+		if item.Ref != "" {
+			resolved, err := resolveRef(item.Ref, oas)
+			if err != nil {
+				return combined, err
+			}
+
+			expanded, err := expandAllOf(resolved, oas)
+			if err != nil {
+				return combined, err
+			}
+			for name, prop := range expanded.Properties {
+				combined.Properties[name] = prop
+			}
+		} else {
+
+			for name, prop := range item.Properties {
+				combined.Properties[name] = prop
+			}
+		}
+	}
+
+	return combined, nil
 }
