@@ -25,8 +25,7 @@ var GenerateRequestCmd = &cobra.Command{
 		}
 		oas, err := ReadOASFile(args[0])
 		if err != nil {
-			fmt.Println("Error reading OAS file:", err)
-			os.Exit(1)
+			return fmt.Errorf("error reading OAS file: %w", err)
 		}
 
 		httpRequest, err := request_generator.GenerateHttpRequest(oas)

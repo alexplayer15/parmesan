@@ -25,6 +25,15 @@ func (b *SchemaBuilder) WithProperty(name string, property oas_struct.Property) 
 	return b
 }
 
+func (b *SchemaBuilder) WithAllOfSchemaRefs(refs []string) *SchemaBuilder {
+	for _, ref := range refs {
+		b.schema.AllOf = append(b.schema.AllOf, oas_struct.Schema{
+			Ref: ref,
+		})
+	}
+	return b
+}
+
 func (b *SchemaBuilder) Build() *oas_struct.Schema {
 	return &b.schema
 }
