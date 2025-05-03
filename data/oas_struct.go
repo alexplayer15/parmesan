@@ -7,8 +7,8 @@ type Property struct {
 	Example     any                 `json:"example" yaml:"example"`
 	Items       *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
 	Ref         string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
-	OneOf       []Property          `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
-	AllOf       []Property          `json:"allOf,omitempty" yaml:"allOf,omitempty"`
+	OneOf       []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AllOf       []Schema            `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 	Properties  map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
 
