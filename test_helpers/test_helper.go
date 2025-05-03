@@ -17,17 +17,23 @@ func ExtractBody(jsonWithHeaders string) (string, error) {
 	return jsonWithHeaders[start:], nil
 }
 
+func getFieldFromJSON(jsonString string, fieldName string) (any, error) {
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	fmt.Println("Career Object:", resultBody)
+
+	fieldValue := resultBody[fieldName]
+
+	return fieldValue, err
+}
+
 func AssertJSONHasArrayWithObject(t *testing.T, jsonString string, fieldName string, requiredKeys []string) {
 	t.Helper()
 
-	var resultBody map[string]any
-	err := json.Unmarshal([]byte(jsonString), &resultBody)
-	assert.NoError(t, err, "should unmarshal JSON successfully")
+	fieldValue, err := getFieldFromJSON(jsonString, fieldName)
+	assert.NoError(t, err, "Should unmarshal successfully")
 
-	value, ok := resultBody[fieldName]
-	assert.True(t, ok, "field %s should exist", fieldName)
-
-	arr, ok := value.([]any)
+	arr, ok := fieldValue.([]any)
 	assert.True(t, ok, "field %s should be an array", fieldName)
 	assert.GreaterOrEqual(t, len(arr), 1, "array %s should have at least one item", fieldName)
 
@@ -43,12 +49,10 @@ func AssertJSONHasArrayWithObject(t *testing.T, jsonString string, fieldName str
 func AssertJSONExamplesForObjectsInAnArray(t *testing.T, jsonString, fieldName string, expectedExamples map[string]any) {
 	t.Helper()
 
-	var resultBody map[string]any
-	err := json.Unmarshal([]byte(jsonString), &resultBody)
-	assert.NoError(t, err, "should unmarshal JSON successfully")
+	fieldValue, err := getFieldFromJSON(jsonString, fieldName)
+	assert.NoError(t, err, "Should unmarshal successfully")
 
-	arrayField := resultBody[fieldName]
-	arr := arrayField.([]any)
+	arr := fieldValue.([]any)
 
 	firstItem := arr[0].(map[string]any)
 
@@ -62,14 +66,10 @@ func AssertJSONExamplesForObjectsInAnArray(t *testing.T, jsonString, fieldName s
 func AssertJSONHasObject(t *testing.T, jsonString string, fieldName string, requiredKeys []string) {
 	t.Helper()
 
-	var resultBody map[string]any
-	err := json.Unmarshal([]byte(jsonString), &resultBody)
-	assert.NoError(t, err, "should unmarshal JSON successfully")
+	fieldValue, err := getFieldFromJSON(jsonString, fieldName)
+	assert.NoError(t, err, "Should unmarshal successfully")
 
-	value, ok := resultBody[fieldName]
-	assert.True(t, ok, "field %s should exist", fieldName)
-
-	obj, ok := value.(map[string]any)
+	obj, ok := fieldValue.(map[string]any)
 	assert.True(t, ok, "field %s should be an object", fieldName)
 	assert.GreaterOrEqual(t, len(obj), 1, "object %s should have at least one item", fieldName)
 
@@ -82,16 +82,50 @@ func AssertJSONHasObject(t *testing.T, jsonString string, fieldName string, requ
 func AssertJSONExamplesForObject(t *testing.T, jsonString, fieldName string, expectedExamples map[string]any) {
 	t.Helper()
 
-	var resultBody map[string]any
-	err := json.Unmarshal([]byte(jsonString), &resultBody)
-	assert.NoError(t, err, "should unmarshal JSON successfully")
+	fieldValue, err := getFieldFromJSON(jsonString, fieldName)
+	assert.NoError(t, err, "Should unmarshal successfully")
 
-	objField := resultBody[fieldName]
-	obj := objField.(map[string]any)
+	obj := fieldValue.(map[string]any)
 
 	for key, expectedValue := range expectedExamples {
 		actualValue, exists := obj[key]
 		assert.True(t, exists, "expected key %s to exist in object inside %s", key, fieldName)
 		assert.Equal(t, expectedValue, actualValue, "expected value for key %s in object inside %s to be %v, got %v", key, fieldName, expectedValue, actualValue)
 	}
+}
+
+func AssertJSONHasXAmountOfArrays(t *testing.T, jsonString string, expectedArrayAmount int) {
+	t.Helper()
+
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	assert.NoError(t, err, "Should unmarshal successfully")
+
+	arrayCount := 0
+
+	for _, v := range resultBody {
+		if _, ok := v.([]any); ok {
+			arrayCount++
+		}
+	}
+
+	assert.Equal(t, expectedArrayAmount, arrayCount, "There should be exactly %d array(s) in the response body", expectedArrayAmount)
+}
+
+func AssertJSONHasXAmountOfObjects(t *testing.T, jsonString string, expectedObjAmount int) {
+	t.Helper()
+
+	var resultBody map[string]any
+	err := json.Unmarshal([]byte(jsonString), &resultBody)
+	assert.NoError(t, err, "Should unmarshal successfully")
+
+	objCount := 0
+
+	for _, v := range resultBody {
+		if _, ok := v.(map[string]any); ok {
+			objCount++
+		}
+	}
+
+	assert.Equal(t, expectedObjAmount, objCount, "There should be exactly %d object(s) in the response body", expectedObjAmount)
 }
