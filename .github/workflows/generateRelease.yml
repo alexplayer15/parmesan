@@ -1,5 +1,5 @@
-name: 'CI'
-run-name: 'Build #${{ github.run_number }} - ${{ github.event.head_commit.message }}'
+name: 'Generate Release'
+run-name: 'Generate Release #${{ github.run_number }} - ${{ github.event.head_commit.message }}'
 
 on:
   push:

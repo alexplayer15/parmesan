@@ -1,5 +1,5 @@
 name: 'CI'
-run-name: 'Build #${{ github.run_number }} - ${{ github.event.head_commit.message }}'
+run-name: 'Run Tests #${{ github.run_number }} - ${{ github.event.head_commit.message }}'
 
 on:
   push:
