@@ -13,8 +13,8 @@ permissions:
   actions: read
 
 jobs:  
-  RunTests:
-    name: Run Tests
+  GenerateRelease:
+    name: Generate Release
     runs-on: ubuntu-latest
     environment:
       name: CI
