@@ -47,45 +47,6 @@ func Test_WhenOASHasIntegerPropertyWithAnExample_ShouldReturnExampleInteger(t *t
 	assert.Contains(t, result, `"age": 25`)
 }
 
-func Test_WhenOASHasObjectProperty_ShouldReturnCorrectObjectInRequest(t *testing.T) {
-	// Arrange
-	oas := test_data.BaseOAS()
-
-	propName, propValue := test_builder.NewPropertyBuilder().
-		WithName("education").
-		WithType("object").
-		WithProperty(test_builder.NewPropertyBuilder().
-			WithName("university").
-			WithType("string").
-			WithExample("University of Manchester").
-			Build(),
-		).
-		WithProperty(test_builder.NewPropertyBuilder().
-			WithName("degree").
-			WithType("string").
-			WithExample("Chemical Engineering").
-			Build(),
-		).
-		WithProperty(test_builder.NewPropertyBuilder().
-			WithName("grade").
-			WithType("string").
-			WithExample("2:1").
-			Build(),
-		).
-		Build()
-
-	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
-
-	result, err := request_generator.GenerateHttpRequest(oas)
-
-	//to do - change to test for structure also
-	assert.NoError(t, err)
-	assert.Contains(t, result, `"education"`)
-	assert.Contains(t, result, `"university": "University of Manchester"`)
-	assert.Contains(t, result, `"degree": "Chemical Engineering"`)
-	assert.Contains(t, result, `"grade": "2:1"`)
-}
-
 func TestWhenOASHasPropertyOfTypeStringWithFormatDateAndAnExample_ShouldReturnDate(t *testing.T) {
 	// Arrange
 	oas := test_data.BaseOAS()

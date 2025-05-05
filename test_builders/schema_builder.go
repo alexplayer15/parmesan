@@ -20,6 +20,11 @@ func (b *SchemaBuilder) WithType(schemaType string) *SchemaBuilder {
 	return b
 }
 
+func (b *SchemaBuilder) WithDefault(defaultValue string) *SchemaBuilder {
+	b.schema.Default = defaultValue
+	return b
+}
+
 func (b *SchemaBuilder) WithProperty(name string, property oas_struct.Property) *SchemaBuilder {
 	b.schema.Properties[name] = property
 	return b
