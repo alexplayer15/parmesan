@@ -26,6 +26,7 @@ func BaseOAS() oas_struct.OAS {
 							},
 						},
 					},
+					Parameters: []oas_struct.Parameter{},
 				},
 			},
 		},

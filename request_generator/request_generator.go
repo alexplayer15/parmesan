@@ -18,7 +18,7 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 
 	for path, methods := range oas.Paths {
 		fullURL := joinURL(serverURL, path)
-		generateRequestForPath(&httpRequests, fullURL, methods, path, oas)
+		generateRequestForPath(&httpRequests, fullURL, methods, oas)
 	}
 
 	return httpRequests.String(), nil
@@ -37,10 +37,7 @@ func joinURL(baseURL, path string) string {
 func generateRequestForPath(builder *strings.Builder,
 	fullURL string,
 	methods map[string]oas_struct.Method,
-	path string,
 	oas oas_struct.OAS) {
-
-	builder.WriteString(fmt.Sprintf("### Path: %s\n", path))
 
 	for method, methodData := range methods {
 		generateHttpRequestForMethod(builder, method, methodData, fullURL, oas)
@@ -62,21 +59,18 @@ func generateHttpRequestForMethod(builder *strings.Builder,
 }
 
 func handleHeaders(parameters []oas_struct.Parameter) string {
-	var headers string
+	var builder strings.Builder
 	for _, param := range parameters {
-		if param.In == "header" {
-			headers += formatHeader(param)
+		if param.In != "header" {
+			continue
 		}
+		headerValue := param.Example
+		if headerValue == "" {
+			headerValue = "default-value"
+		}
+		fmt.Fprintf(&builder, "%s: %s\n", param.Name, headerValue)
 	}
-	return headers
-}
-
-func formatHeader(param oas_struct.Parameter) string {
-	headerValue := param.Example
-	if headerValue == "" {
-		headerValue = "default-value"
-	}
-	return fmt.Sprintf("%s: %s\n", param.Name, headerValue)
+	return builder.String()
 }
 
 func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS) string {

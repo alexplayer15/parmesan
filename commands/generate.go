@@ -23,7 +23,7 @@ var GenerateRequestCmd = &cobra.Command{
 		if err := verifyIfFileExists(oasFile); err != nil {
 			return err
 		}
-		oas, err := readOASFile(oasFile)
+		oas, err := parseOASFile(oasFile)
 		if err != nil {
 			return fmt.Errorf("error reading OAS file: %w", err)
 		}
@@ -36,10 +36,7 @@ var GenerateRequestCmd = &cobra.Command{
 			return fmt.Errorf("failed to generate HTTP request: %w", err)
 		}
 
-		baseName := filepath.Base(oasFile)
-		ext := filepath.Ext(baseName)
-		nameWithoutExt := strings.TrimSuffix(baseName, ext)
-		outputFile := nameWithoutExt + ".http"
+		outputFile := changeExtension(oasFile, ".http")
 
 		if err := os.WriteFile(outputFile, []byte(httpRequest), 0644); err != nil {
 			return fmt.Errorf("failed to write HTTP file: %w", err)
@@ -63,16 +60,13 @@ func verifyIfFileExists(file string) error {
 	return nil
 }
 
-func readOASFile(file string) (oas_struct.OAS, error) {
+func parseOASFile(file string) (oas_struct.OAS, error) {
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return oas_struct.OAS{}, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	ext := filepath.Ext(file)
-	if len(ext) > 0 && ext[0] == '.' {
-		ext = ext[1:]
-	}
+	ext := strings.TrimPrefix(filepath.Ext(file), ".")
 
 	var oas oas_struct.OAS
 
@@ -107,4 +101,9 @@ func checkIfOASFileIsValid(oas oas_struct.OAS) error {
 	}
 
 	return nil
+}
+
+func changeExtension(filePath, newExt string) string {
+	base := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+	return base + newExt
 }

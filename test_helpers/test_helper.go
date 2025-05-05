@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func ExtractBody(jsonWithHeaders string) (string, error) {
@@ -15,6 +16,27 @@ func ExtractBody(jsonWithHeaders string) (string, error) {
 		return "", fmt.Errorf("no JSON body found in the input")
 	}
 	return jsonWithHeaders[start:], nil
+}
+
+func ExtractHeaders(t *testing.T, result string) (map[string]string, error) {
+	t.Helper()
+	parts := strings.SplitN(result, "\n\n", 2)
+	require.Len(t, parts, 2, "expected result to have headers and body separated by \\n\\n")
+
+	headers := parts[0]
+
+	headerLines := strings.Split(headers, "\n")
+	headerMap := make(map[string]string)
+	for _, line := range headerLines {
+		if strings.Contains(line, ":") {
+			parts := strings.SplitN(line, ":", 2)
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			headerMap[key] = value
+		}
+	}
+
+	return headerMap, nil
 }
 
 func getFieldFromJSON(jsonString string, fieldName string) (any, error) {
