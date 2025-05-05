@@ -9,10 +9,6 @@ import (
 )
 
 func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
-	if len(oas.Servers) == 0 {
-		return "", fmt.Errorf("no server URL found in OAS")
-	}
-
 	serverURL := oas.Servers[0].URL
 	if serverURL == "" {
 		return "", fmt.Errorf("server URL is empty")
