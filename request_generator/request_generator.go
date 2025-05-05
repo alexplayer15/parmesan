@@ -2,6 +2,7 @@ package request_generator
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -18,44 +19,39 @@ func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
 
 	for path, methods := range oas.Paths {
 		fullURL := joinURL(serverURL, path)
-		generateRequestForPath(&httpRequests, fullURL, methods, oas)
+		err := generateRequestForPath(&httpRequests, fullURL, methods, oas)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate request for path %s: %w", path, err)
+		}
 	}
 
 	return httpRequests.String(), nil
 }
 
-func joinURL(baseURL, path string) string {
-
-	baseURL = strings.TrimSuffix(baseURL, "/")
-
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	return baseURL + path
-}
-
-func generateRequestForPath(builder *strings.Builder,
-	fullURL string,
-	methods map[string]oas_struct.Method,
-	oas oas_struct.OAS) {
-
+func generateRequestForPath(builder *strings.Builder, fullURL string, methods map[string]oas_struct.Method, oas oas_struct.OAS) error {
 	for method, methodData := range methods {
-		generateHttpRequestForMethod(builder, method, methodData, fullURL, oas)
+		err := generateHttpRequestForMethod(builder, method, methodData, fullURL, oas)
+		if err != nil {
+			return fmt.Errorf("failed to generate HTTP request for method %s: %w", method, err)
+		}
 	}
+	return nil
 }
 
-func generateHttpRequestForMethod(builder *strings.Builder,
-	method string,
-	methodData oas_struct.Method,
-	fullURL string,
-	oas oas_struct.OAS) {
+func generateHttpRequestForMethod(builder *strings.Builder, method string, methodData oas_struct.Method, fullURL string, oas oas_struct.OAS) error {
+	body, err := handleRequestBody(methodData.RequestBody, oas, fullURL)
+	if err != nil {
+		return fmt.Errorf("failed to handle request body: %w", err)
+	}
 
 	builder.WriteString(fmt.Sprintf("#### Summary: %s\n", methodData.Summary))
 	builder.WriteString(fmt.Sprintf("%s %s\n", strings.ToUpper(method), fullURL))
 	builder.WriteString(handleHeaders(methodData.Parameters))
 	builder.WriteString("Content-Type: application/json\n\n")
-	builder.WriteString(handleRequestBody(methodData.RequestBody, oas))
+	builder.WriteString(body)
 	builder.WriteString("\n\n")
+
+	return nil
 }
 
 func handleHeaders(parameters []oas_struct.Parameter) string {
@@ -73,23 +69,27 @@ func handleHeaders(parameters []oas_struct.Parameter) string {
 	return builder.String()
 }
 
-func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS) string {
-	var body string
-	if content, ok := requestBody.Content["application/json"]; ok {
-		schema := content.Schema
-
-		if schema.Ref != "" {
-			resolvedSchema, err := resolveRef(schema.Ref, oas)
-			if err != nil {
-
-				return ""
-			}
-			schema = resolvedSchema
-		}
-
-		body = generateJsonBody(schema, oas)
+func handleRequestBody(requestBody oas_struct.RequestBody, oas oas_struct.OAS, path string) (string, error) {
+	content, ok := requestBody.Content["application/json"]
+	if !ok {
+		log.Printf("[WARNING] Path '%s' has no 'application/json' request body. Skipping body generation.", path)
+		return "", nil
 	}
-	return body
+
+	schema, err := resolveSchema(content.Schema, oas)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve schema: %w", err)
+	}
+
+	body := generateJsonBodyFromSchema(schema, oas)
+	return body, nil
+}
+
+func resolveSchema(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	if schema.Ref == "" {
+		return schema, nil
+	}
+	return resolveRef(schema.Ref, oas)
 }
 
 func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
@@ -106,14 +106,7 @@ func resolveRef(ref string, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	return schema, nil
 }
 
-func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
-	if len(schema.OneOf) > 0 {
-		schema = schema.OneOf[0]
-	}
-	return schema
-}
-
-func generateJsonBody(schema oas_struct.Schema, oas oas_struct.OAS) string {
+func generateJsonBodyFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string {
 	var body string
 
 	pickFirstOneOfIfExists(schema)
@@ -218,7 +211,7 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 				return formatArrayProperty(propName, propFromSchema, oas)
 
 			case "object":
-				objectBody := generateJsonBody(referredSchema, oas)
+				objectBody := generateJsonBodyFromSchema(referredSchema, oas)
 				objectBody = strings.TrimSpace(objectBody)
 				indentedObjectBody := indentJson(objectBody, 2)
 				return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody)
@@ -374,15 +367,6 @@ func generateObjectFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) stri
 	return objectBody.String()
 }
 
-func indentJson(json string, spaces int) string {
-	lines := strings.Split(json, "\n")
-	indent := strings.Repeat(" ", spaces)
-	for i, line := range lines {
-		lines[i] = indent + line
-	}
-	return strings.Join(lines, "\n")
-}
-
 func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	combined := oas_struct.Schema{
 		Type:       "object",
@@ -416,4 +400,30 @@ func expandAllOf(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct.Schem
 	}
 
 	return combined, nil
+}
+
+func pickFirstOneOfIfExists(schema oas_struct.Schema) oas_struct.Schema {
+	if len(schema.OneOf) > 0 {
+		schema = schema.OneOf[0]
+	}
+	return schema
+}
+
+func indentJson(json string, spaces int) string {
+	lines := strings.Split(json, "\n")
+	indent := strings.Repeat(" ", spaces)
+	for i, line := range lines {
+		lines[i] = indent + line
+	}
+	return strings.Join(lines, "\n")
+}
+
+func joinURL(baseURL, path string) string {
+
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return baseURL + path
 }
