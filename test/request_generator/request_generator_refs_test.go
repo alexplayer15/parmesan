@@ -57,7 +57,7 @@ func Test_WhenOASHasAnArrayPropertyReferencingASchemaOfTypeObject_ShouldReturnAr
 	})
 }
 
-func Test_WhenOASHasAPropertyReferencingASchemaOfTypeObject_ShouldReturnResolvedObject(t *testing.T) {
+func Test_WhenOASHasAPropertyReferencingASchemaOfTypeObject_ShouldReturnObject(t *testing.T) {
 	//Arrange
 	oas := test_data.BaseOAS()
 
@@ -101,4 +101,29 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeObject_ShouldReturnResolved
 		"degree":     "Chemical Engineering",
 		"grade":      "2:1",
 	})
+}
+
+func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithADefault_ShouldReturnStringWithDefault(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	educationItemSchema := test_builder.NewSchemaBuilder().
+		WithType("string").
+		WithDefault("University of Manchester").
+		Build()
+
+	oas.Components.Schemas["Education"] = *educationItemSchema
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("education").
+		WithRef("#/components/schemas/Education").
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	assert.Contains(t, result, `"education": "University of Manchester"`)
 }

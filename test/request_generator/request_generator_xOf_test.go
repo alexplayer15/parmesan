@@ -169,3 +169,47 @@ func Test_WhenOASPropertyUsesAllOfReferencingMultipleDifferentObjects_ShouldRetu
 	})
 	test_helpers.AssertJSONHasXAmountOfObjects(t, body, 1)
 }
+
+func Test_WhenAnArrayPropertyReferencesAnObjectWhichUsesAllOf_ShouldReturnAnArrayWithAllReferencedObjects(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	careerItemSchema := test_builder.NewSchemaBuilder().
+		WithType("object").
+		WithAllOfSchemaRefs([]string{
+			"#/components/schemas/Job",
+		}).
+		Build()
+
+	jobItemSchema := test_builder.NewSchemaBuilder().
+		WithType("object").
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("job").
+			WithType("string").
+			WithExample("Developer").
+			Build()).
+		Build()
+
+	oas.Components.Schemas["Career"] = *careerItemSchema
+	oas.Components.Schemas["Job"] = *jobItemSchema
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("career").
+		WithType("array").
+		WithItemsRef("#/components/schemas/Career").
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	body, err := test_helpers.ExtractBody(result)
+	assert.NoError(t, err)
+	test_helpers.AssertJSONHasArrayWithObject(t, body, "career", []string{"job"})
+	test_helpers.AssertJSONExamplesForObjectsInAnArray(t, body, "career", map[string]any{
+		"job": "Developer",
+	})
+	test_helpers.AssertJSONHasXAmountOfArrays(t, body, 1)
+}
