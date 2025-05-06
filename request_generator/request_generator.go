@@ -118,6 +118,10 @@ func generateJsonFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string
 		}
 	}
 
+	if schema.Type != "object" && len(schema.Properties) == 0 {
+		return ""
+	}
+
 	var builder strings.Builder
 	builder.WriteString("{\n")
 	for propName, prop := range schema.Properties {
@@ -126,7 +130,7 @@ func generateJsonFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) string
 
 	if len(schema.Properties) > 0 {
 		objectStr := builder.String()
-		objectStr = objectStr[:len(objectStr)-2] + "\n" // remove last comma
+		objectStr = objectStr[:len(objectStr)-2] + "\n"
 		builder.Reset()
 		builder.WriteString(objectStr)
 	}
