@@ -183,7 +183,7 @@ func expandAllOfSchema(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct
 
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) (string, error) {
 	if prop.Example != nil {
-		return formatPropertyExample(propName, prop.Example), nil
+		return formatPropertyValue(propName, prop.Example), nil
 	}
 
 	resolvedSchema, err := resolveProperty(prop, oas)
@@ -192,7 +192,7 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 	}
 
 	if resolvedSchema.Example != nil {
-		return formatPropertyExample(propName, resolvedSchema.Example), nil
+		return formatPropertyValue(propName, resolvedSchema.Example), nil
 	}
 
 	switch resolvedSchema.Type {
@@ -209,13 +209,9 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 			Items: resolvedSchema.Items,
 		}
 		return formatArrayProperty(propName, arrayProp, oas)
-	case "integer", "number":
-		return fmt.Sprintf("  \"%s\": %v,\n", propName, resolvedSchema.Default), nil
-	case "boolean":
-		return fmt.Sprintf("  \"%s\": %v,\n", propName, resolvedSchema.Default), nil
 	default:
 		if resolvedSchema.Default != nil {
-			return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, resolvedSchema.Default), nil
+			return formatPropertyValue(propName, resolvedSchema.Default), nil
 		}
 		return getFallbackValue(propName, prop), nil
 	}
@@ -289,27 +285,6 @@ func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_stru
 	return combined, nil
 }
 
-func generateObjectFromProperties(properties map[string]oas_struct.Property, oas oas_struct.OAS) (string, error) {
-	var builder strings.Builder
-	builder.WriteString("{\n")
-
-	for name, prop := range properties {
-		formattedJsonProperty, err := formatJsonProperty(name, prop, oas)
-		if err != nil {
-			return "", err
-		}
-		builder.WriteString(formattedJsonProperty)
-	}
-	if len(properties) > 0 {
-		str := builder.String()
-		str = str[:len(str)-2] + "\n"
-		builder.Reset()
-		builder.WriteString(str)
-	}
-	builder.WriteString("}")
-	return builder.String(), nil
-}
-
 func getFallbackValue(propName string, prop oas_struct.Property) string {
 
 	switch prop.Type {
@@ -334,8 +309,9 @@ func getFallbackValue(propName string, prop oas_struct.Property) string {
 	}
 }
 
-func formatPropertyExample(propName string, example any) string {
-	switch v := example.(type) {
+func formatPropertyValue(propName string, value any) string {
+	//can be used for default or example values
+	switch v := value.(type) {
 	case []interface{}:
 		formattedItems := []string{}
 		for _, item := range v {
