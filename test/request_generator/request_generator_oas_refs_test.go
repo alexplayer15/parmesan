@@ -152,7 +152,32 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeObject_ShouldReturnObject(t
 	})
 }
 
-func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithADefault_ShouldReturnStringWithDefault(t *testing.T) {
+func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithAnExample_ShouldReturnExampleString(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	educationItemSchema := test_builder.NewSchemaBuilder().
+		WithType("string").
+		WithExample("University of Manchester").
+		Build()
+
+	oas.Components.Schemas["Education"] = *educationItemSchema
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("education").
+		WithRef("#/components/schemas/Education").
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	assert.Contains(t, result, `"education": "University of Manchester"`)
+}
+
+func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithADefault_ShouldReturnDefaultString(t *testing.T) {
 	//Arrange
 	oas := test_data.BaseOAS()
 
@@ -210,4 +235,39 @@ func Test_WhenOASHasASchemaWhichContainsAPropertyUsingANonExistentReference_Shou
 
 	//Assert
 	assert.Error(t, err)
+}
+
+func Test_WhenAnArrayPropertyReferencesASchemaWhichHasPropertiesWithDefaultValues_ShouldReturnDefaultValues(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	jobItemSchema := test_builder.NewSchemaBuilder().
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("years of experience").
+			WithType("integer").
+			WithDefault(3).
+			Build()).
+		Build()
+
+	oas.Components.Schemas["Job"] = *jobItemSchema
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("job").
+		WithType("array").
+		WithItemsRef("#/components/schemas/Job").
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	body, err := test_helpers.ExtractBody(result)
+	assert.NoError(t, err)
+	test_helpers.AssertJSONHasArrayWithObject(t, body, "job", []string{"years of experience"})
+	test_helpers.AssertJSONExamplesForObjectsInAnArray(t, body, "job", map[string]any{
+		"years of experience": float64(3),
+	})
+	test_helpers.AssertJSONHasXAmountOfArrays(t, body, 1)
 }

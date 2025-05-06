@@ -157,6 +157,7 @@ func expandAllOfSchema(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct
 	}
 
 	for _, item := range schema.AllOf {
+		var props map[string]oas_struct.Property
 		if item.Ref != "" {
 			resolved, err := resolveRef(item.Ref, oas)
 			if err != nil {
@@ -167,14 +168,13 @@ func expandAllOfSchema(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct
 			if err != nil {
 				return combined, err
 			}
-			for name, prop := range expanded.Properties {
-				combined.Properties[name] = prop
-			}
+			props = expanded.Properties
 		} else {
+			props = item.Properties
+		}
 
-			for name, prop := range item.Properties {
-				combined.Properties[name] = prop
-			}
+		for name, prop := range props {
+			combined.Properties[name] = prop
 		}
 	}
 
@@ -186,98 +186,74 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 		return formatPropertyExample(propName, prop.Example), nil
 	}
 
-	if len(prop.AllOf) > 0 {
-		expandedSchema, err := expandAllOfProperty(prop, oas)
+	resolvedSchema, err := resolveProperty(prop, oas)
+	if err != nil {
+		return "", err
+	}
+
+	if resolvedSchema.Example != nil {
+		return formatPropertyExample(propName, resolvedSchema.Example), nil
+	}
+
+	switch resolvedSchema.Type {
+	case "object":
+		body, err := generateJsonFromSchema(resolvedSchema, oas)
 		if err != nil {
 			return "", err
 		}
-		objectBody, err := generateJsonFromSchema(expandedSchema, oas)
-		if err != nil {
-			return "", err
+		return formatObjectProperty(propName, body), nil
+
+	case "array":
+		arrayProp := oas_struct.Property{
+			Type:  resolvedSchema.Type,
+			Items: resolvedSchema.Items,
 		}
-		objectBody = strings.TrimSpace(objectBody)
-		indentedObjectBody := indentJson(objectBody, 2)
-		return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody), nil
+		return formatArrayProperty(propName, arrayProp, oas)
+	case "integer", "number":
+		return fmt.Sprintf("  \"%s\": %v,\n", propName, resolvedSchema.Default), nil
+	case "boolean":
+		return fmt.Sprintf("  \"%s\": %v,\n", propName, resolvedSchema.Default), nil
+	default:
+		if resolvedSchema.Default != nil {
+			return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, resolvedSchema.Default), nil
+		}
+		return getFallbackValue(propName, prop), nil
+	}
+}
+
+func formatObjectProperty(propName string, body string) string {
+	body = strings.TrimSpace(body)
+	indented := indentJson(body, 2)
+	return fmt.Sprintf("  \"%s\": %s,\n", propName, indented)
+}
+
+func resolveProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
+	if prop.Ref != "" {
+		return resolveRef(prop.Ref, oas)
 	}
 
 	if len(prop.OneOf) > 0 {
 		selected := prop.OneOf[0]
-
 		if selected.Ref != "" {
-			if resolved, err := resolveRef(selected.Ref, oas); err == nil {
-				selected = resolved
-			}
+			return resolveRef(selected.Ref, oas)
 		}
-
-		objectBody, err := generateJsonFromSchema(selected, oas)
-		if err != nil {
-			return "", err
-		}
-		indented := indentJson(strings.TrimSpace(objectBody), 2)
-
-		return fmt.Sprintf("\"%s\": %s,\n", propName, indented), nil
+		return selected, nil
 	}
 
-	if prop.Ref != "" {
-		referredSchema, err := resolveRef(prop.Ref, oas)
+	if len(prop.AllOf) > 0 {
+		expanded, err := expandAllOfProperty(prop, oas)
 		if err != nil {
-			return "", err
+			return oas_struct.Schema{}, err
 		}
-
-		if referredSchema.Example != nil {
-			return formatPropertyExample(propName, referredSchema.Example), nil
-		}
-
-		switch referredSchema.Type {
-		case "array":
-			propFromSchema := oas_struct.Property{
-				Type:  referredSchema.Type,
-				Items: referredSchema.Items,
-			}
-			formattedArrayProperty, err := formatArrayProperty(propName, propFromSchema, oas)
-			if err != nil {
-				return "", err
-			}
-
-			return formattedArrayProperty, nil
-		case "object":
-			objectBody, err := generateJsonFromSchema(referredSchema, oas)
-			if err != nil {
-				return "", err
-			}
-			objectBody = strings.TrimSpace(objectBody)
-			indentedObjectBody := indentJson(objectBody, 2)
-			return fmt.Sprintf("  \"%s\": %s,\n", propName, indentedObjectBody), nil
-
-		default:
-			if referredSchema.Default != nil {
-				return fmt.Sprintf("  \"%s\": \"%v\",\n", propName, referredSchema.Default), nil
-			}
-			return getFallbackValue(propName, oas_struct.Property{
-				Type: referredSchema.Type,
-			}), nil
-		}
+		return expanded, nil
 	}
 
-	if prop.Type == "array" && prop.Items != nil {
-		formattedArrayProperty, err := formatArrayProperty(propName, prop, oas)
-		if err != nil {
-			return "", err
-		}
-		return formattedArrayProperty, nil
-	}
-
-	if prop.Type == "object" && len(prop.Properties) > 0 {
-		nestedBody, err := generateObjectFromProperties(prop.Properties, oas)
-		if err != nil {
-			return "", err
-		}
-		nestedBody = strings.TrimSpace(nestedBody)
-		indented := indentJson(nestedBody, 2)
-		return fmt.Sprintf("  \"%s\":%s,\n", propName, indented), nil
-	}
-
-	return getFallbackValue(propName, prop), nil
+	return oas_struct.Schema{
+		Type:       prop.Type,
+		Properties: prop.Properties,
+		Items:      prop.Items,
+		Default:    prop.Default,
+	}, nil
 }
 
 func expandAllOfProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {

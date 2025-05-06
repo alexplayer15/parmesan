@@ -20,6 +20,11 @@ func (b *SchemaBuilder) WithType(schemaType string) *SchemaBuilder {
 	return b
 }
 
+func (b *SchemaBuilder) WithExample(exampleValue string) *SchemaBuilder {
+	b.schema.Example = exampleValue
+	return b
+}
+
 func (b *SchemaBuilder) WithDefault(defaultValue string) *SchemaBuilder {
 	b.schema.Default = defaultValue
 	return b
