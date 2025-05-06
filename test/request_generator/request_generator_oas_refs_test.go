@@ -176,3 +176,38 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithADefault_ShouldRe
 	assert.NoError(t, err)
 	assert.Contains(t, result, `"education": "University of Manchester"`)
 }
+
+func Test_WhenOASHasASchemaWhichContainsAPropertyUsingANonExistentReference_ShouldErrorAndInformTheUser(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	educationItemSchema := test_builder.NewSchemaBuilder().
+		WithType("object").
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("university").
+			WithType("string").
+			WithExample("University of Manchester").
+			Build()).
+		Build()
+
+	requestBodySchema := test_builder.NewSchemaBuilder().
+		WithType("object").
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("education").
+			WithType("array").
+			WithItemsRef("#/components/schemas/NonExistentSchemaName").
+			Build()).
+		Build()
+
+	mediaType := oas.Paths["/users"]["post"].RequestBody.Content["application/json"]
+	mediaType.Schema = *requestBodySchema
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"] = mediaType
+
+	oas.Components.Schemas["Education"] = *educationItemSchema
+
+	//Act
+	_, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.Error(t, err)
+}

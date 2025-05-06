@@ -125,7 +125,6 @@ func Test_WhenOASHasObjectPropertyWithExamples_ShouldReturnObject(t *testing.T) 
 
 	result, err := request_generator.GenerateHttpRequest(oas)
 
-	//to do - change to test for structure also
 	assert.NoError(t, err)
 	body, err := test_helpers.ExtractBody(result)
 	assert.NoError(t, err)
