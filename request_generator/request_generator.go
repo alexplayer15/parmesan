@@ -183,7 +183,7 @@ func expandAllOfSchema(schema oas_struct.Schema, oas oas_struct.OAS) (oas_struct
 
 func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) (string, error) {
 	if prop.Example != nil {
-		return formatPropertyValue(propName, prop.Example), nil
+		return formatProperty(propName, prop.Example), nil
 	}
 
 	resolvedSchema, err := resolveProperty(prop, oas)
@@ -192,7 +192,7 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 	}
 
 	if resolvedSchema.Example != nil {
-		return formatPropertyValue(propName, resolvedSchema.Example), nil
+		return formatProperty(propName, resolvedSchema.Example), nil
 	}
 
 	switch resolvedSchema.Type {
@@ -208,10 +208,10 @@ func formatJsonProperty(propName string, prop oas_struct.Property, oas oas_struc
 			Type:  resolvedSchema.Type,
 			Items: resolvedSchema.Items,
 		}
-		return formatArrayProperty(propName, arrayProp, oas)
+		return generateJsonFromArray(propName, arrayProp, oas)
 	default:
 		if resolvedSchema.Default != nil {
-			return formatPropertyValue(propName, resolvedSchema.Default), nil
+			return formatProperty(propName, resolvedSchema.Default), nil
 		}
 		return getFallbackValue(propName, prop), nil
 	}
@@ -309,21 +309,11 @@ func getFallbackValue(propName string, prop oas_struct.Property) string {
 	}
 }
 
-func formatPropertyValue(propName string, value any) string {
-	//can be used for default or example values
-	switch v := value.(type) {
-	case []interface{}:
-		formattedItems := []string{}
-		for _, item := range v {
-			formattedItems = append(formattedItems, formatExampleValue(item))
-		}
-		return fmt.Sprintf("  \"%s\": [%s],\n", propName, strings.Join(formattedItems, ", "))
-	default:
-		return fmt.Sprintf("  \"%s\": %s,\n", propName, formatExampleValue(v))
-	}
+func formatProperty(propName string, value any) string {
+	return fmt.Sprintf("  \"%s\": %s,\n", propName, formatPropertyValue(value))
 }
 
-func formatExampleValue(v interface{}) string {
+func formatPropertyValue(v any) string {
 	switch val := v.(type) {
 	case string:
 		return fmt.Sprintf("\"%s\"", val)
@@ -331,18 +321,24 @@ func formatExampleValue(v interface{}) string {
 		return fmt.Sprintf("%v", val)
 	case time.Time:
 		return fmt.Sprintf("\"%s\"", val.Format("2006-01-02"))
-	case map[string]interface{}:
+	case map[string]any:
 		objFields := []string{}
 		for key, value := range val {
 			objFields = append(objFields, fmt.Sprintf("\"%s\": \"%v\"", key, value))
 		}
 		return fmt.Sprintf("{%s}", strings.Join(objFields, ", "))
+	case []any:
+		formattedItems := []string{}
+		for _, item := range val {
+			formattedItems = append(formattedItems, formatPropertyValue(item))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(formattedItems, ", "))
 	default:
 		return fmt.Sprintf("\"%v\"", val)
 	}
 }
 
-func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_struct.OAS) (string, error) {
+func generateJsonFromArray(propName string, prop oas_struct.Property, oas oas_struct.OAS) (string, error) {
 
 	if prop.Items.Ref != "" {
 		resolvedSchema, err := resolveRef(prop.Items.Ref, oas)
@@ -352,12 +348,6 @@ func formatArrayProperty(propName string, prop oas_struct.Property, oas oas_stru
 		if resolvedSchema.Example != nil {
 			if exampleStr, ok := resolvedSchema.Example.(string); ok {
 				return fmt.Sprintf("  \"%s\": [\"%s\"],\n", propName, exampleStr), nil
-			}
-		}
-		if len(resolvedSchema.AllOf) > 0 {
-			expanded, err := expandAllOfSchema(resolvedSchema, oas)
-			if err == nil {
-				resolvedSchema = expanded
 			}
 		}
 		objectBody, err := generateJsonFromSchema(resolvedSchema, oas)
