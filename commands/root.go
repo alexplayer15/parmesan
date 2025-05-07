@@ -12,6 +12,6 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	GenerateRequestCmd.Flags().StringVar(&output, "output", "http", "Output format (e.g., http)")
+	GenerateRequestCmd.Flags().StringVar(&output, "output", "http", "Directory of output")
 	RootCmd.AddCommand(GenerateRequestCmd)
 }
