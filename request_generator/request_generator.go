@@ -217,12 +217,6 @@ func generateJsonFromProperty(propName string, prop oas_struct.Property, oas oas
 	}
 }
 
-func formatObjectProperty(propName string, body string) string {
-	body = strings.TrimSpace(body)
-	indented := indentJson(body, 2)
-	return fmt.Sprintf("  \"%s\": %s,\n", propName, indented)
-}
-
 func resolveProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.Schema, error) {
 	if prop.Ref != "" {
 		return resolveRef(prop.Ref, oas)
@@ -358,25 +352,38 @@ func generateJsonFromArray(propName string, prop oas_struct.Property, oas oas_st
 		return "", err
 	}
 
-	indentedBody := indentJson(body, 4)
+	indentedBody := indentJson(body, 4, false)
 	return fmt.Sprintf("  \"%s\": [\n%s\n  ],\n", propName, indentedBody), nil
 }
 
-func indentJson(json string, spaces int) string {
+func formatObjectProperty(propName string, body string) string {
+	return fmt.Sprintf("  \"%s\": %s,\n", propName, indentJson(body, 2, true))
+}
+
+func indentJson(json string, spaces int, skipFirstLineIndent bool) string {
+	json = strings.TrimSpace(json)
+
 	lines := strings.Split(json, "\n")
-	indent := strings.Repeat(" ", spaces)
-	for i, line := range lines {
-		lines[i] = indent + line
+	if len(lines) == 0 {
+		return json
 	}
-	return strings.Join(lines, "\n")
+
+	indent := strings.Repeat(" ", spaces)
+	var builder strings.Builder
+
+	for i, line := range lines {
+		if skipFirstLineIndent && i == 0 {
+			builder.WriteString(line + "\n")
+			continue
+		}
+		builder.WriteString(indent + line + "\n")
+	}
+
+	return strings.TrimSuffix(builder.String(), "\n")
 }
 
 func joinURL(baseURL, path string) string {
-
-	baseURL = strings.TrimSuffix(baseURL, "/")
-
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
+	baseURL = strings.TrimRight(baseURL, "/")
+	path = "/" + strings.TrimLeft(path, "/")
 	return baseURL + path
 }
