@@ -9,6 +9,7 @@ type Property struct {
 	Items       *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
 	Ref         string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 	OneOf       []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AnyOf       []Schema            `json:"anyOf,omitempty" yaml:"anyOf,omitempty"`
 	AllOf       []Schema            `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 	Properties  map[string]Property `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
@@ -21,6 +22,7 @@ type Schema struct {
 	Default    any                 `json:"default" yaml:"default"`
 	Items      *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
 	OneOf      []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
+	AnyOf      []Schema            `json:"anyOf,omitempty" yaml:"anyOf,omitempty"`
 	AllOf      []Schema            `json:"allOf,omitempty" yaml:"allOf,omitempty"`
 }
 

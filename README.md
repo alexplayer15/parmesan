@@ -193,10 +193,6 @@ directory would be created unless it already exists and either way the new `.htt
 ## Roadmap
 These are features I plan on working on soon:
 
-- Customise output (e.g., file path, naming conventions)
-
-- Handling example generation for anyOf
-
 - A send-request command which automates request generation and execution
 
 - Your ideas? If people find the tool useful. I would love to hear any suggestions on how we can improve it!
