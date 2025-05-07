@@ -5,6 +5,7 @@ type Property struct {
 	Format      string              `json:"format,omitempty" yaml:"format,omitempty"`
 	Description string              `json:"description" yaml:"description"`
 	Example     any                 `json:"example" yaml:"example"`
+	Default     any                 `json:"default" yaml:"default"`
 	Items       *Schema             `json:"items,omitempty" yaml:"items,omitempty"`
 	Ref         string              `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 	OneOf       []Schema            `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`

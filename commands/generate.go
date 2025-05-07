@@ -19,13 +19,16 @@ var GenerateRequestCmd = &cobra.Command{
 	Short: "Generate a .http request from an OpenAPI file",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		file := args[0]
-		if err := verifyIfFileExists(file); err != nil {
+		oasFile := args[0]
+		if err := verifyIfFileExists(oasFile); err != nil {
 			return err
 		}
-		oas, err := ReadOASFile(args[0])
+		oas, err := parseOASFile(oasFile)
 		if err != nil {
 			return fmt.Errorf("error reading OAS file: %w", err)
+		}
+		if err := checkIfOASFileIsValid(oas); err != nil {
+			return fmt.Errorf("invalid OAS structure: %w", err)
 		}
 
 		httpRequest, err := request_generator.GenerateHttpRequest(oas)
@@ -33,13 +36,9 @@ var GenerateRequestCmd = &cobra.Command{
 			return fmt.Errorf("failed to generate HTTP request: %w", err)
 		}
 
-		baseName := filepath.Base(file)
-		ext := filepath.Ext(baseName)
-		nameWithoutExt := strings.TrimSuffix(baseName, ext)
-		outputFile := nameWithoutExt + ".http"
+		outputFile := changeExtension(oasFile, ".http")
 
-		os.WriteFile(outputFile, []byte(httpRequest), 0644)
-		if err != nil {
+		if err := os.WriteFile(outputFile, []byte(httpRequest), 0644); err != nil {
 			return fmt.Errorf("failed to write HTTP file: %w", err)
 		}
 
@@ -61,16 +60,13 @@ func verifyIfFileExists(file string) error {
 	return nil
 }
 
-func ReadOASFile(file string) (oas_struct.OAS, error) {
+func parseOASFile(file string) (oas_struct.OAS, error) {
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return oas_struct.OAS{}, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	ext := filepath.Ext(file)
-	if len(ext) > 0 && ext[0] == '.' {
-		ext = ext[1:]
-	}
+	ext := strings.TrimPrefix(filepath.Ext(file), ".")
 
 	var oas oas_struct.OAS
 
@@ -87,15 +83,27 @@ func ReadOASFile(file string) (oas_struct.OAS, error) {
 		return oas_struct.OAS{}, fmt.Errorf("unsupported file extension: %s", ext)
 	}
 
+	return oas, nil
+}
+
+func checkIfOASFileIsValid(oas oas_struct.OAS) error {
 	if oas.OpenAPI == "" {
-		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: openapi")
+		return fmt.Errorf("missing required OAS field: openapi")
 	}
 	if oas.Info.Title == "" {
-		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: info")
+		return fmt.Errorf("missing required OAS field: info")
+	}
+	if len(oas.Servers) == 0 {
+		return fmt.Errorf("no server URL found in OAS")
 	}
 	if len(oas.Paths) == 0 {
-		return oas_struct.OAS{}, fmt.Errorf("missing required OAS field: paths")
+		return fmt.Errorf("missing required OAS field: paths")
 	}
 
-	return oas, nil
+	return nil
+}
+
+func changeExtension(filePath, newExt string) string {
+	base := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+	return base + newExt
 }

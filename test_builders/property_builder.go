@@ -34,6 +34,11 @@ func (b *PropertyBuilder) WithExample(example any) *PropertyBuilder {
 	return b
 }
 
+func (b *PropertyBuilder) WithDefault(defaultValue any) *PropertyBuilder {
+	b.property.Default = defaultValue
+	return b
+}
+
 func (b *PropertyBuilder) WithItems(items *oas_struct.Schema) *PropertyBuilder {
 	b.property.Items = items
 	return b

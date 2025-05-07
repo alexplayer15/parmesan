@@ -103,6 +103,7 @@ paths:
 
 	os.WriteFile(testOas, []byte(yamlContent), 0644)
 	defer os.Remove(testOas)
+	defer os.Remove("oas.http")
 	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
 
 	//Act
