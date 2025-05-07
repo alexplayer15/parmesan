@@ -114,6 +114,10 @@ func generateJsonFromSchema(schema oas_struct.Schema, oas oas_struct.OAS) (strin
 		schema = schema.OneOf[0]
 	}
 
+	if len(schema.AnyOf) > 0 {
+		schema = schema.AnyOf[0]
+	}
+
 	if len(schema.AllOf) > 0 {
 		expanded, err := expandAllOfSchema(schema, oas)
 		if err == nil {
@@ -224,6 +228,14 @@ func resolveProperty(prop oas_struct.Property, oas oas_struct.OAS) (oas_struct.S
 
 	if len(prop.OneOf) > 0 {
 		selected := prop.OneOf[0]
+		if selected.Ref != "" {
+			return resolveRef(selected.Ref, oas)
+		}
+		return selected, nil
+	}
+
+	if len(prop.AnyOf) > 0 {
+		selected := prop.AnyOf[0]
 		if selected.Ref != "" {
 			return resolveRef(selected.Ref, oas)
 		}

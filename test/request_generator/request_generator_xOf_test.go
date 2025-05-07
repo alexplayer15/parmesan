@@ -60,6 +60,56 @@ func Test_WhenOASPropertyUsesOneOf_ShouldReturnTheObjectInTheFirstReference(t *t
 	test_helpers.AssertJSONHasXAmountOfObjects(t, body, 1)
 }
 
+func Test_WhenOASPropertyUsesAnyOf_ShouldReturnTheObjectInTheFirstReference(t *testing.T) {
+	//Arrange
+	oas := test_data.BaseOAS()
+
+	educationItemSchema := test_builder.NewSchemaBuilder().
+		WithType("object").
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("university").
+			WithType("string").
+			WithExample("University of Manchester").
+			Build()).
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("degree").
+			WithType("string").
+			WithExample("Chemical Engineering").
+			Build()).
+		WithProperty(test_builder.NewPropertyBuilder().
+			WithName("grade").
+			WithType("string").
+			WithExample("2:1").
+			Build()).
+		Build()
+
+	oas.Components.Schemas["Education"] = *educationItemSchema
+
+	propName, propValue := test_builder.NewPropertyBuilder().
+		WithName("education").
+		WithAnyOfRefs([]string{
+			"#/components/schemas/Education",
+			"#/components/schemas/Education",
+		}).
+		Build()
+	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
+
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas)
+
+	//Assert
+	assert.NoError(t, err)
+	body, err := test_helpers.ExtractBody(result)
+	assert.NoError(t, err)
+	test_helpers.AssertJSONHasObject(t, body, "education", []string{"university", "degree", "grade"})
+	test_helpers.AssertJSONExamplesForObject(t, body, "education", map[string]any{
+		"university": "University of Manchester",
+		"degree":     "Chemical Engineering",
+		"grade":      "2:1",
+	})
+	test_helpers.AssertJSONHasXAmountOfObjects(t, body, 1)
+}
+
 func Test_WhenOASPropertyUsesAllOfAndReferencesTheSameSchemaTwice_ShouldReturnOneObject(t *testing.T) {
 	//Arrange
 	oas := test_data.BaseOAS()

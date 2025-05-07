@@ -60,6 +60,15 @@ func (b *PropertyBuilder) WithOneOfRefs(refs []string) *PropertyBuilder {
 	return b
 }
 
+func (b *PropertyBuilder) WithAnyOfRefs(refs []string) *PropertyBuilder {
+	for _, ref := range refs {
+		b.property.AnyOf = append(b.property.AnyOf, oas_struct.Schema{
+			Ref: ref,
+		})
+	}
+	return b
+}
+
 func (b *PropertyBuilder) WithAllOfRefs(refs []string) *PropertyBuilder {
 	for _, ref := range refs {
 		b.property.AllOf = append(b.property.AllOf, oas_struct.Schema{
