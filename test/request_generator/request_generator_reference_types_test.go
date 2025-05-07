@@ -22,7 +22,7 @@ func Test_WhenOASHasArrayPropertyContainingStringsWithAnExample_ShouldReturnExam
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -40,7 +40,7 @@ func Test_WhenOASHasArrayPropertyContainingStringsWithoutAnExample_ShouldReturnF
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -59,7 +59,7 @@ func Test_WhenOASHasArrayPropertyContainingIntsWithAnExample_ShouldReturnExample
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -77,7 +77,7 @@ func Test_WhenOASHasArrayPropertyContainingIntsWithoutAnExample_ShouldReturnFall
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -115,7 +115,7 @@ func Test_WhenOASHasArrayPropertyContainingAnObjectWithAnExample_ShouldReturnExa
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -158,7 +158,7 @@ func Test_WhenOASHasArrayPropertyContainingAnObjectWithoutAnExample_ShouldReturn
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -202,8 +202,10 @@ func Test_WhenOASHasObjectPropertyWithExamples_ShouldReturnObject(t *testing.T) 
 
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
-	result, err := request_generator.GenerateHttpRequest(oas)
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
+	//Assert
 	assert.NoError(t, err)
 	body, err := test_helpers.ExtractBody(result)
 	assert.NoError(t, err)
@@ -241,8 +243,10 @@ func Test_WhenOASHasObjectPropertyWithoutExamples_ShouldReturnFallbackValues(t *
 
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
-	result, err := request_generator.GenerateHttpRequest(oas)
+	//Act
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
+	//Assert
 	assert.NoError(t, err)
 	body, err := test_helpers.ExtractBody(result)
 	assert.NoError(t, err)

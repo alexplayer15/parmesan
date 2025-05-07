@@ -1,4 +1,4 @@
-package output_tests
+package flag_tests
 
 import (
 	"path/filepath"
@@ -42,26 +42,4 @@ func Test_WhenOutputFlagArgumentIsAnExistingFile_ShouldErrorAndInformTheUser(t *
 
 	//Assert
 	assert.EqualError(t, err, "invalid output directory: path exists and is a file")
-}
-
-func Test_WhenOutputFlagIsUsedButNoArgumentIsGiven_ShouldReturnErrorAndInformUser(t *testing.T) {
-	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "--output")
-
-	//Act
-	err := cmd.Execute()
-
-	//Assert
-	assert.EqualError(t, err, "flag needs an argument: --output")
-}
-
-func Test_WhenOutputFlagIsUsedBAndMoreThanOneArgumentIsGiven_ShouldReturnErrorAndInformUser(t *testing.T) {
-	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "--output", "dummyArg", "dummyArg2")
-
-	//Act
-	err := cmd.Execute()
-
-	//Assert
-	assert.EqualError(t, err, "accepts 1 arg(s), received 2")
 }

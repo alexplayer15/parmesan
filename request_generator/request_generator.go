@@ -9,8 +9,8 @@ import (
 	oas_struct "github.com/alexplayer15/parmesan/data"
 )
 
-func GenerateHttpRequest(oas oas_struct.OAS) (string, error) {
-	serverURL := oas.Servers[0].URL
+func GenerateHttpRequest(oas oas_struct.OAS, chosenServerIndex int) (string, error) {
+	serverURL := oas.Servers[chosenServerIndex].URL
 	if serverURL == "" {
 		return "", fmt.Errorf("server URL is empty")
 	}

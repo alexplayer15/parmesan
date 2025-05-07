@@ -183,12 +183,14 @@ You get the most value out of Parmesan if you have example values in your Spec. 
 
 ## Flags 
 
-Currently there is only one flag for Parmesan which is the `--output` flag. 
+Currently, there are two flags for Parmesan; `output` and `with-server`. 
 
-`Output` allows you to control the directory you want your `.http` files to be outputted to. 
+`output` allows you to control the directory you want your `.http` files to be outputted to. 
 
 For instance, if I ran `parmesan generate-request hello-oas.yml --output httpRequests`. Then a `httpRequests'
 directory would be created unless it already exists and either way the new `.http` file would be generated there.
+
+`with-server` allows you to control which server url you want to generate requests to. Parmesan will look for server urls defined in the OAS and make the choice based off the index value you choose. 0 will choose the first server url and is the default. 
 
 ## Roadmap
 These are features I plan on working on soon:

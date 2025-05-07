@@ -43,7 +43,13 @@ func newGenerateRequestCmd() *cobra.Command {
 
 			outputFile := filepath.Join(outputDir, changeExtension(oasFile, ".http"))
 
-			httpRequest, err := request_generator.GenerateHttpRequest(oas)
+			chosenServerIndex, _ := cmd.Flags().GetInt("with-server")
+
+			if err := validateChosenServerUrl(chosenServerIndex, oas); err != nil {
+				return err
+			}
+
+			httpRequest, err := request_generator.GenerateHttpRequest(oas, chosenServerIndex)
 			if err != nil {
 				return fmt.Errorf("failed to generate HTTP request: %w", err)
 			}
@@ -58,6 +64,7 @@ func newGenerateRequestCmd() *cobra.Command {
 
 	// Define flags
 	cmd.Flags().String("output", ".", "Directory of output")
+	cmd.Flags().Int("with-server", 0, "Which server url to use from OAS. 0 = First URL.")
 
 	return cmd
 }
@@ -137,6 +144,14 @@ func checkIfOASFileIsValid(oas oas_struct.OAS) error {
 	}
 	if len(oas.Paths) == 0 {
 		return fmt.Errorf("missing required OAS field: paths")
+	}
+
+	return nil
+}
+
+func validateChosenServerUrl(chosenServerUrl int, oas oas_struct.OAS) error {
+	if chosenServerUrl < 0 || chosenServerUrl >= len(oas.Servers) {
+		return fmt.Errorf("invalid server index %d: There are %d servers available starting from 0", chosenServerUrl, len(oas.Servers))
 	}
 
 	return nil
