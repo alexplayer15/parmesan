@@ -181,6 +181,15 @@ Content-Type: application/json
 ## Importance of Example values 
 You get the most value out of Parmesan if you have example values in your Spec. Otherwise, it is most likely Parmesan won't be able to generate a request which can be sent without modification.
 
+## Flags 
+
+Currently there is only one flag for Parmesan which is the `--output` flag. 
+
+`Output` allows you to control the directory you want your `.http` files to be outputted to. 
+
+For instance, if I ran `parmesan generate-request hello-oas.yml --output httpRequests`. Then a `httpRequests'
+directory would be created unless it already exists and either way the new `.http` file would be generated there.
+
 ## Roadmap
 These are features I plan on working on soon:
 
