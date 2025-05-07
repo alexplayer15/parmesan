@@ -3,9 +3,13 @@ package test_helpers
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/alexplayer15/parmesan/commands"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -150,4 +154,34 @@ func AssertJSONHasXAmountOfObjects(t *testing.T, jsonString string, expectedObjA
 	}
 
 	assert.Equal(t, expectedObjAmount, objCount, "There should be exactly %d object(s) in the response body", expectedObjAmount)
+}
+
+func SetupCommandTest(t *testing.T, testFileName string, testFileContentPath string, args ...string) (*cobra.Command, string) {
+	t.Helper()
+
+	tmpDir := t.TempDir()
+
+	targetFilePath := filepath.Join(tmpDir, testFileName)
+	yamlContent, err := os.ReadFile(testFileContentPath)
+	require.NoError(t, err, "failed to read test file content")
+
+	err = os.WriteFile(targetFilePath, yamlContent, 0644)
+	require.NoError(t, err, "failed to write test OAS file")
+
+	oldWd, err := os.Getwd()
+	require.NoError(t, err, "failed to get working directory")
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err, "failed to change directory")
+
+	t.Cleanup(func() {
+		os.Chdir(oldWd)
+	})
+
+	cmd := commands.NewRootCmd()
+
+	finalArgs := append([]string{"generate-request", testFileName}, args...)
+	cmd.SetArgs(finalArgs)
+
+	return cmd, tmpDir
 }

@@ -7,6 +7,7 @@ The idea of the tool is to generate requests which are valid and can be sent wit
 1. Prerequisites:
 
 - Go v1.24 installed (could work on earlier versions but not yet tested. 1.24 is the safest option).
+- Parmesan currently only supports OAS v3.0 
 
 2. Install
 - `go install github.com/alexplayer15/parmesan@v0.3.0` (will be updated once there are more stable versions)

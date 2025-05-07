@@ -4,14 +4,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var output string
+func NewRootCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "parmesan",
+		Short: "CLI tool to generate requests based off your OAS",
+	}
 
-var RootCmd = &cobra.Command{
-	Use:   "parmesan",
-	Short: "CLI tool to generate requests based off your OAS",
+	rootCmd.AddCommand(newGenerateRequestCmd())
+
+	return rootCmd
 }
 
-func init() {
-	GenerateRequestCmd.Flags().StringVar(&output, "output", "http", "Directory of output")
-	RootCmd.AddCommand(GenerateRequestCmd)
-}
+var RootCmd = NewRootCmd()

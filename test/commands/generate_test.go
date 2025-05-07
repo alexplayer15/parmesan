@@ -1,20 +1,23 @@
 package command_tests
 
 import (
-	"os"
 	"testing"
 
 	"github.com/alexplayer15/parmesan/commands"
+	"github.com/alexplayer15/parmesan/test_helpers"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_WhenGenerateRequestIsNotGivenAnArg_ShouldFail(t *testing.T) {
 	//Arrange
-	commands.RootCmd.SetArgs([]string{"generate-request"})
+	cmd := commands.NewRootCmd()
+	cmd.SetArgs([]string{
+		"generate-request",
+	})
 
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.Error(t, err, "Command should fail if no argument is given")
@@ -22,13 +25,10 @@ func Test_WhenGenerateRequestIsNotGivenAnArg_ShouldFail(t *testing.T) {
 
 func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 	//Arrange
-	testOas := "oas.yml"
-	os.WriteFile(testOas, []byte("dummy content"), 0644)
-	defer os.Remove(testOas)
-	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
+	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "dummyArg")
 
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.Error(t, err, "Command should fail if no argument is given")
@@ -36,35 +36,24 @@ func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 
 func Test_WhenOASHasNoServerURL_ShouldReturnError(t *testing.T) {
 	//Arrange
-	testOas := "oas.yml"
-	yamlContent := `
-openapi: "3.0.0"
-info:
-  title: Example API
-  version: "1.0.0"
-paths:
-  /user:
-    get:
-      responses:
-        '200':
-          description: OK
-`
-	os.WriteFile(testOas, []byte(yamlContent), 0644)
-	defer os.Remove(testOas)
-	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
+	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOasNoServerUrl.yml")
 
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.Error(t, err, "Should be an error alerting user there is no server URL in the OAS")
 }
-func Test_WhenOASDoesNotExist_ShouldReturnNoFileFoundError(t *testing.T) {
+func Test_WhenOASDoesNotExist_ShouldReturnError(t *testing.T) {
 	//Arrange
-	commands.RootCmd.SetArgs([]string{"generate-request", "oasDoesNotExist.yml"})
+	cmd := commands.NewRootCmd()
+	cmd.SetArgs([]string{
+		"generate-request",
+		"oasDoesNotExist.yml",
+	})
 
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.Error(t, err)
@@ -72,13 +61,10 @@ func Test_WhenOASDoesNotExist_ShouldReturnNoFileFoundError(t *testing.T) {
 
 func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T) {
 	//Arrange
-	dummyFilename := "dummy.txt"
-	os.WriteFile(dummyFilename, []byte("dummy content"), 0644)
-	defer os.Remove(dummyFilename)
-	commands.RootCmd.SetArgs([]string{"generate-request", dummyFilename})
+	cmd, _ := test_helpers.SetupCommandTest(t, "oas.txt", "../testOas.yml")
 
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.Error(t, err, "Should return error informing user the file extension is invalid")
@@ -86,28 +72,10 @@ func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T) {
 
 func Test_WhenGenerateRequestIsGivenValidArguments_ShouldNotError(t *testing.T) {
 	//Arrange
-	testOas := "oas.yml"
-	yamlContent := `
-openapi: "3.0.0"
-info:
-  title: Example API
-  version: "1.0.0"
-servers:
-  - url: https://api.example.com
-paths:
-  /user:
-    get:
-      responses:
-        '200':
-          description: OK`
+	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml")
 
-	os.WriteFile(testOas, []byte(yamlContent), 0644)
-	defer os.Remove(testOas)
-	defer os.Remove("oas.http")
-	commands.RootCmd.SetArgs([]string{"generate-request", testOas})
-
-	//Act
-	err := commands.RootCmd.Execute()
+	// Act
+	err := cmd.Execute()
 
 	//Assert
 	assert.NoError(t, err, "Should be no error when 1 arg and correct command is entered")
