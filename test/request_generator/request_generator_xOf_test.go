@@ -45,7 +45,7 @@ func Test_WhenOASPropertyUsesOneOf_ShouldReturnTheObjectInTheFirstReference(t *t
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -95,7 +95,7 @@ func Test_WhenOASPropertyUsesAnyOf_ShouldReturnTheObjectInTheFirstReference(t *t
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -145,7 +145,7 @@ func Test_WhenOASPropertyUsesAllOfAndReferencesTheSameSchemaTwice_ShouldReturnOn
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -204,7 +204,7 @@ func Test_WhenOASPropertyUsesAllOfReferencingMultipleDifferentObjects_ShouldRetu
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -251,7 +251,7 @@ func Test_WhenAnArrayPropertyReferencesAnObjectWhichUsesAllOf_ShouldReturnAnArra
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)

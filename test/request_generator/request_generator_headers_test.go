@@ -24,7 +24,7 @@ func Test_WhenOASHasHeadersWithExamples_ShouldReturnExampleHeaders(t *testing.T)
 	oas.Paths["/users"]["post"] = method
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -46,7 +46,7 @@ func Test_WhenOASHasHeadersWithoutExamples_ShouldReturnFallbackValues(t *testing
 	oas.Paths["/users"]["post"] = method
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)

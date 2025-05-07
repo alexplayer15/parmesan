@@ -21,7 +21,7 @@ func Test_WhenOASHasStringPropertyWithAnExample_ShouldReturnExampleString(t *tes
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -39,7 +39,7 @@ func Test_WhenOASHasStringPropertyWithoutAnExample_ShouldReturnFallbackString(t 
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -58,7 +58,7 @@ func Test_WhenOASHasIntegerPropertyWithAnExample_ShouldReturnExampleInteger(t *t
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -76,7 +76,7 @@ func Test_WhenOASHasIntegerPropertyWithoutAnExample_ShouldReturnExampleZero(t *t
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -96,7 +96,7 @@ func TestWhenOASHasPropertyOfTypeStringWithFormatDateAndAnExample_ShouldReturnDa
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestWhenOASHasPropertyOfTypeStringWithFormatDateAndNoExample_ShouldReturnFa
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)

@@ -43,7 +43,7 @@ func Test_WhenOASHasAnArrayPropertyReferencingASchemaOfTypeObject_ShouldReturnAr
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -91,7 +91,7 @@ func Test_WhenOASHasArrayPropertyReferencingASchemaWhichDoesNotSpecifyObjectType
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -138,7 +138,7 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeObject_ShouldReturnObject(t
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -170,7 +170,7 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithAnExample_ShouldR
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -195,7 +195,7 @@ func Test_WhenOASHasAPropertyReferencingASchemaOfTypeStringWithADefault_ShouldRe
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -231,7 +231,7 @@ func Test_WhenOASHasASchemaWhichContainsAPropertyUsingANonExistentReference_Shou
 	oas.Components.Schemas["Education"] = *educationItemSchema
 
 	//Act
-	_, err := request_generator.GenerateHttpRequest(oas)
+	_, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.Error(t, err)
@@ -259,7 +259,7 @@ func Test_WhenAnArrayPropertyReferencesASchemaWhichHasPropertiesWithDefaultValue
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
@@ -293,7 +293,7 @@ func Test_WhenAnArrayPropertyReferencesASchemaWhichHasPropertiesOfIntTypeAndNoEx
 	oas.Paths["/users"]["post"].RequestBody.Content["application/json"].Schema.Properties[propName] = propValue
 
 	//Act
-	result, err := request_generator.GenerateHttpRequest(oas)
+	result, err := request_generator.GenerateHttpRequest(oas, 0)
 
 	//Assert
 	assert.NoError(t, err)
