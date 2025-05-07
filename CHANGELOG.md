@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/alexplayer15/parmesan/compare/v0.2.2...v0.3.0) (2025-05-07)
+
+
+### Features
+
+* finish big refactor and addition of tests ([8c1924e](https://github.com/alexplayer15/parmesan/commit/8c1924e02b7ac0d246afb4a91ec26a7fcf3e1822))
+
 ## [0.2.2](https://github.com/alexplayer15/parmesan/compare/v0.2.1...v0.2.2) (2025-05-03)
 
 
