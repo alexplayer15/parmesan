@@ -10,7 +10,7 @@ The idea of the tool is to generate requests which are valid and can be sent wit
 - Parmesan currently only supports OAS v3.0 
 
 2. Install
-- `go install github.com/alexplayer15/parmesan@v0.3.0` (will be updated once there are more stable versions)
+- `go install github.com/alexplayer15/parmesan@v0.7.0` (will be updated once there are more stable versions)
 
 ## Running
 As is stand there is one command available for Parmesan which is the `generate-request` command. This will take in an OAS and generate a `.http` file with actionable requests to the API defined in the spec.

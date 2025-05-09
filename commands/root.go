@@ -11,6 +11,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd.AddCommand(newGenerateRequestCmd())
+	rootCmd.AddCommand(newSendRequestCmd())
 
 	return rootCmd
 }

@@ -17,7 +17,7 @@ import (
 func newGenerateRequestCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate-request",
-		Short: "Generate a .http request from an OpenAPI file",
+		Short: "Generate a HTTP request from an OpenAPI Spec",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			oasFile := args[0]
