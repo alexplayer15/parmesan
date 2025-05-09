@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
@@ -43,7 +44,20 @@ func newSendRequestCmd() *cobra.Command {
 				return err
 			}
 
+			method, _ := cmd.Flags().GetString("method")
+			paths, _ := cmd.Flags().GetStringSlice("path")
+
+			//add in validation for method and path input
+
 			for _, req := range requests {
+
+				if method != "*" && req.Method != method {
+					continue
+				}
+
+				if !urlMatchesPaths(req.Url, paths) {
+					continue
+				}
 
 				response, err := request_sender.SendHTTPRequest(req)
 				if err != nil {
@@ -61,6 +75,20 @@ func newSendRequestCmd() *cobra.Command {
 
 	// Define flags
 	cmd.Flags().Int("with-server", 0, "Which server url to use from OAS. 0 = First URL.")
+	cmd.Flags().String("method", "*", "Choose with requests you want to send from your OAS by method. Default is all methods.")
+	cmd.Flags().StringSlice("path", []string{}, "Choose with requests you want to send from your OAS by path. Default is all paths.")
 
 	return cmd
+}
+
+func urlMatchesPaths(url string, paths []string) bool {
+	if len(paths) == 0 {
+		return true
+	}
+	for _, path := range paths {
+		if strings.Contains(url, path) {
+			return true
+		}
+	}
+	return false
 }

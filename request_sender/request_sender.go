@@ -174,10 +174,17 @@ func validateHTTPMethod(httpMethod string) error {
 }
 
 func validateURL(url string) error {
-	if !strings.HasPrefix(url, "http") {
-		return errors.NewInvalidHTTPUrlError(url)
+	allowedURLPrefixes := []string{"http://", "https://"}
+
+	for _, prefix := range allowedURLPrefixes {
+		if strings.HasPrefix(url, prefix) {
+			return nil
+		}
 	}
-	return nil
+
+	//TO DO: add in check for host in URL
+
+	return errors.NewInvalidHTTPUrlError(url)
 }
 
 func SendHTTPRequest(req Request) (string, error) {
