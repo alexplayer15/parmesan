@@ -1,14 +1,25 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/alexplayer15/parmesan/errors"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
 	"github.com/spf13/cobra"
 )
+
+type SavedResponse struct {
+	Method   string `json:"method"`
+	Url      string `json:"url"`
+	Status   int    `json:"status"`
+	Response any    `json:"response"`
+}
 
 func newSendRequestCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -47,10 +58,18 @@ func newSendRequestCmd() *cobra.Command {
 			method, _ := cmd.Flags().GetString("method")
 			paths, _ := cmd.Flags().GetStringSlice("path")
 
-			//add in validation for method and path input
+			if err := request_sender.ValidateHTTPMethod(method); err != nil {
+				return err
+			}
+			for _, path := range paths {
+				if err := validatePathInput(path); err != nil {
+					return errors.NewValidationError(path)
+				}
+			}
+
+			var allResponses []SavedResponse
 
 			for _, req := range requests {
-
 				if method != "*" && req.Method != method {
 					continue
 				}
@@ -59,24 +78,58 @@ func newSendRequestCmd() *cobra.Command {
 					continue
 				}
 
-				response, err := request_sender.SendHTTPRequest(req)
+				responseBody, statusCode, err := request_sender.SendHTTPRequest(req)
 				if err != nil {
 					log.Printf("Failed to send request %s %s: %v", req.Method, req.Url, err)
 					continue
 				}
 
-				// Print the response for now
-				fmt.Printf("Response for %s %s: %s\n", req.Method, req.Url, response)
+				var parsedBody any
+				if err := json.Unmarshal([]byte(responseBody), &parsedBody); err != nil {
+					log.Printf("Failed to parse JSON body for %s %s: %v. Saving as string.", req.Method, req.Url, err)
+					parsedBody = responseBody
+				}
+
+				savedResp := SavedResponse{
+					Method:   req.Method,
+					Url:      req.Url,
+					Status:   statusCode,
+					Response: parsedBody,
+				}
+
+				allResponses = append(allResponses, savedResp)
 			}
+
+			outputDir, _ := cmd.Flags().GetString("output")
+
+			if err := validateOutputPath(outputDir); err != nil {
+				return err
+			}
+			if err := ensureDirectory(outputDir); err != nil {
+				return err
+			}
+
+			filePath := filepath.Join(outputDir, changeExtension(oasFile, ".json"))
+
+			jsonData, err := json.MarshalIndent(allResponses, "", "  ")
+			if err != nil {
+				return fmt.Errorf("failed to marshal all responses: %w", err)
+			}
+
+			if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
+				return fmt.Errorf("failed to write final output file: %w", err)
+			}
+
+			fmt.Printf("Saved all responses to %s\n", filePath)
 
 			return nil
 		},
 	}
 
-	// Define flags
 	cmd.Flags().Int("with-server", 0, "Which server url to use from OAS. 0 = First URL.")
 	cmd.Flags().String("method", "*", "Choose with requests you want to send from your OAS by method. Default is all methods.")
 	cmd.Flags().StringSlice("path", []string{}, "Choose with requests you want to send from your OAS by path. Default is all paths.")
+	cmd.Flags().String("output", ".", "Directory of output for HTTP responses.")
 
 	return cmd
 }
@@ -86,9 +139,30 @@ func urlMatchesPaths(url string, paths []string) bool {
 		return true
 	}
 	for _, path := range paths {
+		validatePathInput(path)
 		if strings.Contains(url, path) {
 			return true
 		}
 	}
 	return false
+}
+
+func validatePathInput(path string) error {
+	if strings.TrimSpace(path) == "" {
+		return fmt.Errorf("path input cannot be empty or only spaces")
+	}
+
+	if strings.Contains(path, " ") {
+		return fmt.Errorf("path input cannot contain spaces")
+	}
+
+	if strings.Contains(path, "http://") || strings.Contains(path, "https://") {
+		return fmt.Errorf("path input must not contain full URLs")
+	}
+
+	if strings.ContainsAny(path, "\\?#") {
+		return fmt.Errorf("path input contains illegal characters (\\, ?, #)")
+	}
+
+	return nil
 }

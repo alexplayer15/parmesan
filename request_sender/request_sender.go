@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -56,7 +57,7 @@ func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
 		if len(block) == 0 {
 			return []Request{}, fmt.Errorf("empty request block")
 		}
-		req, err := extractRequestInfo(block)
+		req, err := getRequestInfo(block)
 		if err != nil {
 			return []Request{}, fmt.Errorf("failed to extract req from block: %w", err)
 		}
@@ -66,9 +67,9 @@ func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
 	return requests, nil
 }
 
-func extractRequestInfo(block []string) (Request, error) {
+func getRequestInfo(block []string) (Request, error) {
 	var request Request
-	method, err := getMethodFromBlock(block)
+	method, err := getMethod(block)
 	if err != nil {
 		return Request{}, fmt.Errorf("failed to extract method: %w", err)
 	}
@@ -76,7 +77,7 @@ func extractRequestInfo(block []string) (Request, error) {
 	if err != nil {
 		return Request{}, fmt.Errorf("failed to extract URL: %w", err)
 	}
-	headers, bodyStartingIndex, err := getHeadersFromBlock(block)
+	headers, bodyStartingIndex, err := getHeaders(block)
 	if err != nil {
 		return Request{}, fmt.Errorf("failed to extract headers: %w", err)
 	}
@@ -92,7 +93,7 @@ func extractRequestInfo(block []string) (Request, error) {
 	return request, nil
 }
 
-func getMethodFromBlock(block []string) (string, error) {
+func getMethod(block []string) (string, error) {
 	firstLine := block[0]
 	parts := strings.SplitN(firstLine, " ", 2)
 	if len(parts) < 2 {
@@ -100,7 +101,7 @@ func getMethodFromBlock(block []string) (string, error) {
 	}
 
 	method := parts[0]
-	if err := validateHTTPMethod(method); err != nil {
+	if err := ValidateHTTPMethod(method); err != nil {
 		return "", err
 	}
 
@@ -122,7 +123,7 @@ func getURL(block []string) (string, error) {
 	return url, nil
 }
 
-func getHeadersFromBlock(block []string) (map[string]string, int, error) {
+func getHeaders(block []string) (map[string]string, int, error) {
 	headers := make(map[string]string)
 
 	for i := 1; i < len(block); i++ {
@@ -163,34 +164,52 @@ func getBody(block []string, bodyStartingIndex int) (string, error) {
 	return body, nil
 }
 
-func validateHTTPMethod(httpMethod string) error {
-	allowedMethods := []string{"GET", "POST", "PUT", "PATCH", "DELETE"}
+func ValidateHTTPMethod(httpMethod string) error {
+	upperHTTPMethod := strings.ToUpper(httpMethod)
+	allowedMethods := []string{"GET", "POST", "PUT", "PATCH", "DELETE", "*"}
 
-	if slices.Contains(allowedMethods, httpMethod) {
+	if slices.Contains(allowedMethods, upperHTTPMethod) {
 		return nil
 	}
 
-	return errors.NewInvalidHTTPMethodError(httpMethod)
+	return errors.NewValidationError(httpMethod)
 }
 
-func validateURL(url string) error {
+func validateURL(rawURL string) error {
 	allowedURLPrefixes := []string{"http://", "https://"}
 
+	hasValidPrefix := false
 	for _, prefix := range allowedURLPrefixes {
-		if strings.HasPrefix(url, prefix) {
-			return nil
+		if strings.HasPrefix(rawURL, prefix) {
+			hasValidPrefix = true
+			break
 		}
 	}
 
-	//TO DO: add in check for host in URL
+	if !hasValidPrefix {
+		return errors.NewValidationError(rawURL)
+	}
 
-	return errors.NewInvalidHTTPUrlError(url)
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return errors.NewValidationError(rawURL)
+	}
+
+	if parsedURL.Host == "" {
+		return errors.NewValidationError(rawURL)
+	}
+
+	if parsedURL.Path == "" {
+		return errors.NewValidationError(rawURL)
+	}
+
+	return nil
 }
 
-func SendHTTPRequest(req Request) (string, error) {
+func SendHTTPRequest(req Request) (string, int, error) {
 	request, err := http.NewRequest(req.Method, req.Url, bytes.NewBuffer([]byte(req.Body)))
 	if err != nil {
-		return "", fmt.Errorf("failed to create HTTP request: %w", err)
+		return "", 0, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 
 	for key, value := range req.Headers {
@@ -200,14 +219,14 @@ func SendHTTPRequest(req Request) (string, error) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", fmt.Errorf("failed to send HTTP request: %w", err)
+		return "", 0, fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer response.Body.Close()
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", response.StatusCode, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	return string(responseBody), nil
+	return string(responseBody), response.StatusCode, nil
 }

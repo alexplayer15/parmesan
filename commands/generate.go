@@ -63,7 +63,7 @@ func newGenerateRequestCmd() *cobra.Command {
 	}
 
 	// Define flags
-	cmd.Flags().String("output", ".", "Directory of output")
+	cmd.Flags().String("output", ".", "Directory of output for .http file.")
 	cmd.Flags().Int("with-server", 0, "Which server url to use from OAS. 0 = First URL.")
 
 	return cmd
