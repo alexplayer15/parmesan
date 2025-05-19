@@ -172,7 +172,7 @@ func ValidateHTTPMethod(httpMethod string) error {
 		return nil
 	}
 
-	return errors.NewValidationError(httpMethod)
+	return errors.NewValidationError("method", httpMethod)
 }
 
 func validateURL(rawURL string) error {
@@ -187,20 +187,20 @@ func validateURL(rawURL string) error {
 	}
 
 	if !hasValidPrefix {
-		return errors.NewValidationError(rawURL)
+		return errors.NewValidationError("url", rawURL)
 	}
 
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return errors.NewValidationError(rawURL)
+		return errors.NewValidationError("url", rawURL)
 	}
 
 	if parsedURL.Host == "" {
-		return errors.NewValidationError(rawURL)
+		return errors.NewValidationError("url", rawURL)
 	}
 
 	if parsedURL.Path == "" {
-		return errors.NewValidationError(rawURL)
+		return errors.NewValidationError("url", rawURL)
 	}
 
 	return nil

@@ -10,13 +10,14 @@ var (
 )
 
 type ValidationError struct {
-	InvalidParameter string
+	ParameterName  string
+	ParameterValue string
 }
 
 func (e *ValidationError) Error() string {
-	return fmt.Sprintf("validation error caused by: %s", e.InvalidParameter)
+	return fmt.Sprintf("validation error: %s is not a valid %s", e.ParameterValue, e.ParameterName)
 }
 
-func NewValidationError(invalidParameter string) error {
-	return &ValidationError{InvalidParameter: invalidParameter}
+func NewValidationError(parameterName string, parameterValue string) error {
+	return &ValidationError{ParameterName: parameterName, ParameterValue: parameterValue}
 }

@@ -63,7 +63,7 @@ func newSendRequestCmd() *cobra.Command {
 			}
 			for _, path := range paths {
 				if err := validatePathInput(path); err != nil {
-					return errors.NewValidationError(path)
+					return errors.NewValidationError("path", path)
 				}
 			}
 
