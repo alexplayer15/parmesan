@@ -46,7 +46,6 @@ func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
 
 		//append empty lines to be able to differentiate between headers and body later
 		currentBlock = append(currentBlock, line)
-
 	}
 
 	if len(currentBlock) > 0 {
@@ -172,7 +171,7 @@ func ValidateHTTPMethod(httpMethod string) error {
 		return nil
 	}
 
-	return errors.NewValidationError("method", httpMethod)
+	return errors.NewInvalidMethodError("method", httpMethod)
 }
 
 func validateURL(rawURL string) error {
@@ -187,20 +186,20 @@ func validateURL(rawURL string) error {
 	}
 
 	if !hasValidPrefix {
-		return errors.NewValidationError("url", rawURL)
+		return errors.NewInvalidPrefixError("url", rawURL)
 	}
 
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return errors.NewValidationError("url", rawURL)
+		return errors.NewURLParsingError("url", rawURL)
 	}
 
 	if parsedURL.Host == "" {
-		return errors.NewValidationError("url", rawURL)
+		return errors.NewMissingHostError("url", rawURL)
 	}
 
 	if parsedURL.Path == "" {
-		return errors.NewValidationError("url", rawURL)
+		return errors.NewMissingPathError("url", rawURL)
 	}
 
 	return nil

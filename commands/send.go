@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/alexplayer15/parmesan/errors"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
 	"github.com/spf13/cobra"
@@ -63,7 +62,7 @@ func newSendRequestCmd() *cobra.Command {
 			}
 			for _, path := range paths {
 				if err := validatePathInput(path); err != nil {
-					return errors.NewValidationError("path", path)
+					return err //to do: use typed validation error in the above method and return it here
 				}
 			}
 
