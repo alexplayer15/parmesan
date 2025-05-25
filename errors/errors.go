@@ -12,7 +12,6 @@ const (
 	ErrCodeInvalidPrefix ErrorCode = "InvalidPrefix"
 	ErrCodeURLParsing    ErrorCode = "URLParsing"
 	ErrCodeMissingHost   ErrorCode = "MissingHost"
-	ErrCodeMissingPath   ErrorCode = "MissingPath"
 )
 
 var (
@@ -53,8 +52,4 @@ func NewURLParsingError(param, value string) error {
 
 func NewMissingHostError(param, value string) error {
 	return NewValidationError(param, value, ErrCodeMissingHost, "host is missing from URL")
-}
-
-func NewMissingPathError(param, value string) error {
-	return NewValidationError(param, value, ErrCodeMissingHost, "path is missing from URL")
 }

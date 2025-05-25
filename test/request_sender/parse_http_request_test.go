@@ -10,12 +10,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type TestRequest struct {
+	Name string
+	Age  int
+}
+
+func NewTestRequest(name string, age int) *TestRequest {
+	return &TestRequest{
+		Name: name,
+		Age:  age,
+	}
+}
+
 func Test_WhenHttpFileIsEmpty_ShouldError(t *testing.T) {
 	//Arrange
-	httpRequestFile := ""
+	httpRequest := ""
 
 	//Act
-	_, err := request_sender.ParseHttpRequestFile(httpRequestFile)
+	_, err := request_sender.ParseHttpRequestFile(httpRequest)
 
 	//Assert
 	assert.ErrorIs(t, err, errors.ErrEmptyHTTPFile)
@@ -23,7 +35,11 @@ func Test_WhenHttpFileIsEmpty_ShouldError(t *testing.T) {
 
 func Test_WhenInvalidMethodIsProvidedInHttpRequestFile_ShouldError(t *testing.T) {
 	//Arrange
-	httpRequestFile := test_builder.NewHTTPRequestBuilder().WithMethod("PASTA").Build()
+	httpRequest := test_builder.NewHTTPRequestBuilder().WithMethod("PASTA").Build()
+
+	httpRequestFile := test_builder.NewHTTPFileBuilder().
+		WithHTTPRequests([]*test_builder.HTTPRequestBuilder{httpRequest}).
+		Build()
 
 	//Act
 	_, err := request_sender.ParseHttpRequestFile(httpRequestFile)
@@ -38,7 +54,10 @@ func Test_WhenInvalidMethodIsProvidedInHttpRequestFile_ShouldError(t *testing.T)
 
 func Test_WhenInvalidURLPrefixIsProvided_ShouldReturnValidationError(t *testing.T) {
 	//Arrange
-	httpRequestFile := test_builder.NewHTTPRequestBuilder().WithURL("bananattp://localhost:8081").Build()
+	httpRequest := test_builder.NewHTTPRequestBuilder().WithURL("bananattp://localhost:8081").Build()
+	httpRequestFile := test_builder.NewHTTPFileBuilder().
+		WithHTTPRequests([]*test_builder.HTTPRequestBuilder{httpRequest}).
+		Build()
 
 	//Act
 	_, err := request_sender.ParseHttpRequestFile(httpRequestFile)
@@ -49,4 +68,102 @@ func Test_WhenInvalidURLPrefixIsProvided_ShouldReturnValidationError(t *testing.
 	assert.Equal(t, "url", ve.Param)
 	assert.Equal(t, "bananattp://localhost:8081", ve.Value)
 	assert.Equal(t, errors.ErrCodeInvalidPrefix, ve.Code)
+}
+
+func Test_WhenURLIsMissingHost_ShouldReturnValidationError(t *testing.T) {
+	//Arrange
+	httpRequest := test_builder.NewHTTPRequestBuilder().WithURL("http://:8081").Build()
+
+	httpRequestFile := test_builder.NewHTTPFileBuilder().
+		WithHTTPRequests([]*test_builder.HTTPRequestBuilder{httpRequest}).
+		Build()
+
+	//Act
+	_, err := request_sender.ParseHttpRequestFile(httpRequestFile)
+
+	//Assert
+	var ve *errors.ValidationError
+	require.ErrorAs(t, err, &ve)
+	assert.Equal(t, "url", ve.Param)
+	assert.Equal(t, "http://:8081", ve.Value)
+	assert.Equal(t, errors.ErrCodeMissingHost, ve.Code)
+}
+
+func Test_WhenValidHTTPFileIsGenerated_ShouldReturnValidRequest(t *testing.T) {
+	//Arrange
+	testRequestBody := NewTestRequest("Alex", 25)
+	httpRequest := test_builder.NewHTTPRequestBuilder().
+		WithSummary("Test Summary").
+		WithMethod("GET").
+		WithURL("http://localhost:8081").
+		WithHeader("Content", "application/json").
+		WithJSONBody(testRequestBody).
+		Build()
+
+	httpRequestFile := test_builder.NewHTTPFileBuilder().
+		WithHTTPRequests([]*test_builder.HTTPRequestBuilder{httpRequest}).
+		Build()
+
+	//Act
+	httpRequests, err := request_sender.ParseHttpRequestFile(httpRequestFile)
+
+	//Assert
+	assert.NoError(t, err)
+	expectedJSON := `{
+		"Name": "Alex",
+		"Age": 25
+	}`
+	assert.JSONEq(t, expectedJSON, httpRequests[0].Body)
+	assert.Equal(t, "application/json", httpRequests[0].Headers["Content"])
+	assert.Equal(t, "GET", httpRequests[0].Method)
+	assert.Equal(t, "http://localhost:8081", httpRequests[0].Url)
+}
+
+func Test_WhenMultipleRequestsAreParsed_ShouldReturnDetailsCorrectly(t *testing.T) {
+	//Arrange
+	testRequestBodyOne := NewTestRequest("Alex", 25)
+	httpRequestOne := test_builder.NewHTTPRequestBuilder().
+		WithSummary("Test Summary").
+		WithMethod("GET").
+		WithURL("http://localhost:8081").
+		WithHeader("Content", "application/json").
+		WithJSONBody(testRequestBodyOne).
+		Build()
+
+	testRequestBodyTwo := NewTestRequest("Mia", 27)
+	httpRequestTwo := test_builder.NewHTTPRequestBuilder().
+		WithSummary("Test Summary").
+		WithMethod("GET").
+		WithURL("http://localhost:8081").
+		WithHeader("Content", "application/json").
+		WithJSONBody(testRequestBodyTwo).
+		Build()
+
+	httpRequestFile := test_builder.NewHTTPFileBuilder().
+		WithHTTPRequests([]*test_builder.HTTPRequestBuilder{httpRequestOne, httpRequestTwo}).
+		Build()
+
+	//Act
+	httpRequests, err := request_sender.ParseHttpRequestFile(httpRequestFile)
+
+	//Assert
+	assert.NoError(t, err)
+	expectedJSONBodyOne := `{
+		"Name": "Alex",
+		"Age": 25
+	}`
+	assert.JSONEq(t, expectedJSONBodyOne, httpRequests[0].Body)
+	assert.Equal(t, "application/json", httpRequests[0].Headers["Content"])
+	assert.Equal(t, "GET", httpRequests[0].Method)
+	assert.Equal(t, "http://localhost:8081", httpRequests[0].Url)
+
+	expectedJSONBodyTwo := `{
+		"Name": "Mia",
+		"Age": 27
+	}`
+
+	assert.JSONEq(t, expectedJSONBodyTwo, httpRequests[1].Body)
+	assert.Equal(t, "application/json", httpRequests[1].Headers["Content"])
+	assert.Equal(t, "GET", httpRequests[1].Method)
+	assert.Equal(t, "http://localhost:8081", httpRequests[1].Url)
 }

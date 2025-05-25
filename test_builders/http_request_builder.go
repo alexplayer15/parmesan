@@ -2,8 +2,6 @@ package test_builder
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 )
 
 type HTTPRequestBuilder struct {
@@ -44,26 +42,25 @@ func (b *HTTPRequestBuilder) WithHeader(key, value string) *HTTPRequestBuilder {
 	return b
 }
 
-func (b *HTTPRequestBuilder) WithBody(body string) *HTTPRequestBuilder {
-	b.body = body
-	return b
-}
-
-func (b *HTTPRequestBuilder) WithJSONBody(body interface{}) *HTTPRequestBuilder {
+func (b *HTTPRequestBuilder) WithJSONBody(body any) *HTTPRequestBuilder {
 	bytes, _ := json.MarshalIndent(body, "", "  ")
 	b.body = string(bytes)
 	return b
 }
 
-func (b *HTTPRequestBuilder) Build() string {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("#### Summary: %s\n", b.summary))
-	sb.WriteString(fmt.Sprintf("%s %s\n", b.method, b.url))
-	for k, v := range b.headers {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", k, v))
-	}
-	sb.WriteString("\n")
-	sb.WriteString(b.body)
-	sb.WriteString("\n\n")
-	return sb.String()
+func (b *HTTPRequestBuilder) Build() *HTTPRequestBuilder {
+	return b
 }
+
+// func (b *HTTPRequestBuilder) Build() string {
+// 	var sb strings.Builder
+// 	sb.WriteString(fmt.Sprintf("#### Summary: %s\n", b.summary))
+// 	sb.WriteString(fmt.Sprintf("%s %s\n", b.method, b.url))
+// 	for k, v := range b.headers {
+// 		sb.WriteString(fmt.Sprintf("%s: %s\n", k, v))
+// 	}
+// 	sb.WriteString("\n")
+// 	sb.WriteString(b.body)
+// 	sb.WriteString("\n\n")
+// 	return sb.String()
+// }

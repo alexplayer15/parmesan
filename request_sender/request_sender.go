@@ -194,12 +194,9 @@ func validateURL(rawURL string) error {
 		return errors.NewURLParsingError("url", rawURL)
 	}
 
-	if parsedURL.Host == "" {
+	host := parsedURL.Hostname()
+	if host == "" {
 		return errors.NewMissingHostError("url", rawURL)
-	}
-
-	if parsedURL.Path == "" {
-		return errors.NewMissingPathError("url", rawURL)
 	}
 
 	return nil
