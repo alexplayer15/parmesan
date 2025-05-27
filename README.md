@@ -214,7 +214,7 @@ All responses will be saved in the current directory in JSON format unless this 
 
 `method` allows you to filter which requests you send by method. Allowed methods are GET, POST, UPDATE, PUT, PATH, DELETE (not case-sensitive)
 
-`hooks` allows you to modify specific values in your request body's using a self-made YAML file. A basic hooks file would look like this:
+`hooks` allows you to modify specific values in your request body's using a self-made YAML file. This flag is made for situations where it is difficult to form valid requests purely from examples in your OAS. This can be the case particularly in enterprise grade Specs. Parmesan works best when you are able to rely on your example values in your OAS. A basic hooks file would look like this:
 
 ```yaml
 - path: /hello
@@ -223,6 +223,8 @@ All responses will be saved in the current directory in JSON format unless this 
     name: Theo
     education.degree: Physics
 ```
+
+If a name and degree field are defined in the expected places in your request body these values will be replaced before sending your request.
 
 You can specify multiple hooks in the same file if you want to modify values in different requests.
 
