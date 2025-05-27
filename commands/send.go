@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/alexplayer15/parmesan/errors"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert/yaml"
 )
 
 type SavedResponse struct {
@@ -18,6 +21,19 @@ type SavedResponse struct {
 	Url      string `json:"url"`
 	Status   int    `json:"status"`
 	Response any    `json:"response"`
+}
+
+type HooksFile []HookEntry
+type HookEntry struct {
+	Path   string         `yaml:"path"`
+	Method string         `yaml:"method"`
+	Body   map[string]any `yaml:"body"`
+}
+
+var hooksFile HooksFile
+
+func (h HookEntry) IsEmpty() bool {
+	return h.Path == "" && h.Method == "" && len(h.Body) == 0
 }
 
 func newSendRequestCmd() *cobra.Command {
@@ -67,6 +83,14 @@ func newSendRequestCmd() *cobra.Command {
 			}
 
 			var allResponses []SavedResponse
+			hooks, _ := cmd.Flags().GetString("hooks")
+
+			if hooks != "" {
+				hooksFile, err = unmarshalHooksFile(hooks)
+				if err != nil {
+					return err
+				}
+			}
 
 			for _, req := range requests {
 				if method != "*" && req.Method != method {
@@ -75,6 +99,18 @@ func newSendRequestCmd() *cobra.Command {
 
 				if !urlMatchesPaths(req.Url, paths) {
 					continue
+				}
+
+				if hooks != "" {
+					matchingHook := tryAndFindHookForThisRequest(hooksFile, req)
+
+					//to do: think of a way to reduce this nesting
+					if !matchingHook.IsEmpty() {
+						req.Body, err = modifyRequestBodyUsingHook(matchingHook, req.Body)
+						if err != nil {
+							return err
+						}
+					}
 				}
 
 				responseBody, statusCode, err := request_sender.SendHTTPRequest(req)
@@ -129,6 +165,7 @@ func newSendRequestCmd() *cobra.Command {
 	cmd.Flags().String("method", "*", "Choose with requests you want to send from your OAS by method. Default is all methods.")
 	cmd.Flags().StringSlice("path", []string{}, "Choose with requests you want to send from your OAS by path. Default is all paths.")
 	cmd.Flags().String("output", ".", "Directory of output for HTTP responses.")
+	cmd.Flags().String("hooks", "", "Location of hooks file to modify request values.")
 
 	return cmd
 }
@@ -164,4 +201,103 @@ func validatePathInput(path string) error {
 	}
 
 	return nil
+}
+
+func unmarshalHooksFile(hooks string) (HooksFile, error) {
+	hooksContent, err := os.ReadFile(hooks)
+	if err != nil {
+		return HooksFile{}, fmt.Errorf("failed to read hooks file %s", hooks)
+	}
+
+	ext := strings.TrimPrefix(filepath.Ext(hooks), ".")
+
+	if ext != "yml" && ext != "yaml" {
+		return HooksFile{}, fmt.Errorf("hooks file must be YAML, you entered a %s file", ext)
+	}
+
+	if err := yaml.Unmarshal(hooksContent, &hooksFile); err != nil {
+		return HooksFile{}, fmt.Errorf("invalid YAML: %w", err)
+	}
+
+	return hooksFile, nil
+}
+
+func tryAndFindHookForThisRequest(hooks HooksFile, req request_sender.Request) HookEntry {
+
+	//URL has already been validated so no need to return an error
+	parsedURL, _ := url.Parse(req.Url)
+
+	for _, hook := range hooks {
+		if hook.Path == parsedURL.Path && hook.Method == req.Method {
+			return hook
+		}
+	}
+
+	return HookEntry{}
+}
+
+func modifyRequestBodyUsingHook(matchingHook HookEntry, requestBody string) (string, error) {
+	var bodyMap map[string]any
+	if err := json.Unmarshal([]byte(requestBody), &bodyMap); err != nil {
+		return "", fmt.Errorf("failed to parse request body: %w", err)
+	}
+
+	for key, val := range matchingHook.Body {
+		// Support nested keys separated by dots
+		keys := strings.Split(key, ".")
+		if err := updateField(bodyMap, keys, val, []string{}); err != nil {
+			return "", fmt.Errorf("failed to apply hook for field '%s': %w", key, err)
+		}
+	}
+
+	updatedBody, err := json.MarshalIndent(bodyMap, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to re-encode modified body: %w", err)
+	}
+
+	return string(updatedBody), nil
+}
+
+func updateField(bodyMap map[string]any, keys []string, newVal any, pathSoFar []string) error {
+	if len(keys) == 0 {
+		//warn user if hooks they have entered for this path are empty. to do: add in log level flag.
+		return nil
+	}
+
+	currentKey := keys[0]
+	pathSoFar = append(pathSoFar, currentKey)
+
+	if len(keys) == 1 {
+		if _, exists := bodyMap[currentKey]; exists {
+			bodyMap[currentKey] = newVal
+			return nil
+		}
+		return errors.NewMissingHookFieldError(strings.Join(pathSoFar, "."))
+	}
+
+	next, exists := bodyMap[currentKey]
+	if !exists {
+		return errors.NewMissingHookFieldError(strings.Join(pathSoFar, "."))
+	}
+
+	switch typed := next.(type) {
+	case map[string]any:
+		return updateField(typed, keys[1:], newVal, pathSoFar)
+
+	case []any:
+		for i, item := range typed {
+			if itemMap, ok := item.(map[string]any); ok {
+				err := updateField(itemMap, keys[1:], newVal, append(pathSoFar, fmt.Sprintf("[%d]", i)))
+				if err != nil {
+					return err
+				}
+				typed[i] = itemMap
+			}
+		}
+		bodyMap[currentKey] = typed
+		return nil
+
+	default:
+		return errors.NewMissingHookFieldError(strings.Join(pathSoFar, "."))
+	}
 }

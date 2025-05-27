@@ -1,3 +1,6 @@
 *.http
 oas/*
 response/*
+.vscode/*
+hooks*
+hooks/*
