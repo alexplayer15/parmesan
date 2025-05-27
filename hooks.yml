@@ -2,3 +2,9 @@
   method: POST
   body:
     flightSearch.departureLocationCode.airportCode: AMS
+
+- path: /comm/v1/flight-offer/search
+  method: POST
+  body:
+    destinations.arrivalMarketAreaCode: ""
+    destinations.departureMarketAreaCode: ""

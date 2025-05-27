@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/alexplayer15/parmesan/errors"
@@ -97,13 +96,8 @@ func updateField(bodyMap map[string]any, keys []string, newVal any, pathSoFar []
 			return errors.NewMissingHookFieldError(strings.Join(pathSoFar, "."))
 		}
 
-		if reflect.TypeOf(existingVal) != reflect.TypeOf(newVal) {
-			return fmt.Errorf(
-				"type mismatch at %s: cannot replace value of type %T with value of type %T",
-				strings.Join(pathSoFar, "."),
-				existingVal,
-				newVal,
-			)
+		if err := validateHookTypesAgainstRequestSchema(existingVal, newVal); err != nil {
+			return err
 		}
 
 		bodyMap[currentKey] = newVal
@@ -135,4 +129,30 @@ func updateField(bodyMap map[string]any, keys []string, newVal any, pathSoFar []
 	default:
 		return errors.NewMissingHookFieldError(strings.Join(pathSoFar, "."))
 	}
+}
+
+func validateHookTypesAgainstRequestSchema(original any, newVal any) error {
+	switch original.(type) {
+	case string:
+		_, ok := newVal.(string)
+		if !ok {
+			return fmt.Errorf("type mismatch: expected string, got %T", newVal)
+		}
+	case int:
+		_, ok := newVal.(float64)
+		if !ok {
+			return fmt.Errorf("type mismatch: expected number, got %T", newVal)
+		}
+	case bool:
+		_, ok := newVal.(bool)
+		if !ok {
+			return fmt.Errorf("type mismatch: expected boolean, got %T", newVal)
+		}
+	case []any, map[string]any:
+		return fmt.Errorf("modifying arrays or objects is not supported")
+	default:
+		return fmt.Errorf("unsupported target type %T", original)
+	}
+
+	return nil
 }

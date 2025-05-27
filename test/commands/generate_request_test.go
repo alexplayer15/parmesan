@@ -25,7 +25,7 @@ func Test_WhenGenerateRequestIsNotGivenAnArg_ShouldFail(t *testing.T) {
 
 func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "dummyArg")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.yml", "../testOas.yml", "dummyArg")
 
 	// Act
 	err := cmd.Execute()
@@ -36,7 +36,7 @@ func Test_WhenGenerateRequestIsGivenMoreThanOneArg_ShouldFail(t *testing.T) {
 
 func Test_WhenOASHasNoServerURL_ShouldReturnError(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOasNoServerUrl.yml")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.yml", "../testOasNoServerUrl.yml")
 
 	// Act
 	err := cmd.Execute()
@@ -61,7 +61,7 @@ func Test_WhenOASDoesNotExist_ShouldReturnError(t *testing.T) {
 
 func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.txt", "../testOas.yml")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.txt", "../testOas.yml")
 
 	// Act
 	err := cmd.Execute()
@@ -72,7 +72,7 @@ func Test_WhenFileDoesNotHaveAValidExtension_ShouldReturnError(t *testing.T) {
 
 func Test_WhenGenerateRequestIsGivenValidArguments_ShouldNotError(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.yml", "../testOas.yml")
 
 	// Act
 	err := cmd.Execute()

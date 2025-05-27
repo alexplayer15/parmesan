@@ -156,7 +156,7 @@ func AssertJSONHasXAmountOfObjects(t *testing.T, jsonString string, expectedObjA
 	assert.Equal(t, expectedObjAmount, objCount, "There should be exactly %d object(s) in the response body", expectedObjAmount)
 }
 
-func SetupCommandTest(t *testing.T, testFileName string, testFileContentPath string, args ...string) (*cobra.Command, string) {
+func SetupGenRequestTest(t *testing.T, testFileName string, testFileContentPath string, args ...string) (*cobra.Command, string) {
 	t.Helper()
 
 	tmpDir := t.TempDir()
