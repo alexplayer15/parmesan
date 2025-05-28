@@ -9,7 +9,7 @@ import (
 
 func Test_WhenWithServerFlagIsUsedWithCorrectArgument_ShouldSelectCorrectServer(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "--with-server", "0")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.yml", "../testOas.yml", "--with-server", "0")
 
 	// Act
 	err := cmd.Execute()
@@ -20,7 +20,7 @@ func Test_WhenWithServerFlagIsUsedWithCorrectArgument_ShouldSelectCorrectServer(
 
 func Test_WhenWithSeverFlagIsGivenAnIndexNotFoundInOAS_ShouldErrorAndInformUser(t *testing.T) {
 	//Arrange
-	cmd, _ := test_helpers.SetupCommandTest(t, "oas.yml", "../testOas.yml", "--with-server", "2")
+	cmd, _ := test_helpers.SetupGenRequestTest(t, "oas.yml", "../testOas.yml", "--with-server", "2")
 
 	// Act
 	err := cmd.Execute()

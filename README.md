@@ -10,10 +10,12 @@ The idea of the tool is to generate requests which are valid and can be sent wit
 - Parmesan currently only supports OAS v3.0 
 
 2. Install
-- `go install github.com/alexplayer15/parmesan@v0.3.0` (will be updated once there are more stable versions)
+- `go install github.com/alexplayer15/parmesan@v0.7.0` (will be updated once there are more stable versions)
 
 ## Running
-As is stand there is one command available for Parmesan which is the `generate-request` command. This will take in an OAS and generate a `.http` file with actionable requests to the API defined in the spec.
+As is, there are two commands available for Parmesan: `generate-request` and `send-request`. `generate-request` will take generate a `.http` file containing all requests defined in the provided OAS. `send-request` will work off the `generate-request` logic to send HTTP requests to the endpoints defined in the OAS.
+
+## Generate Request Command
 
 To run the `generate-request` command, enter the following:
 
@@ -183,7 +185,7 @@ You get the most value out of Parmesan if you have example values in your Spec. 
 
 ## Flags 
 
-Currently, there are two flags for Parmesan; `output` and `with-server`. 
+Currently, there are two flags for `generate-request`; `output` and `with-server`. 
 
 `output` allows you to control the directory you want your `.http` files to be outputted to. 
 
@@ -192,10 +194,50 @@ directory would be created unless it already exists and either way the new `.htt
 
 `with-server` allows you to control which server url you want to generate requests to. Parmesan will look for server urls defined in the OAS and make the choice based off the index value you choose. 0 will choose the first server url and is the default. 
 
+## Send Request Command
+
+To run the `send-request` command, enter the following:
+
+`parmesan send-request <oas-file-location>`
+
+Without flags this will send a request to all endpoints defined in the provided OAS. The requests will only be successful if the example values in the OAS can generate a valid request (or if changes are made through the hooks flag).
+
+All responses will be saved in the current directory in JSON format unless this behaviour is changed with a flag.
+
+## Flags
+
+`output` allows you to control the directory you want your JSON response files to be outputted to.
+
+`with-server` allows you to control which server url you want to send requests to. Parmesan will look for server urls defined in the OAS and make the choice based off the index value you choose. 0 will choose the first server url and is the default. 
+
+`path` allows you to filter which requests you send by path. For instance, if your Spec defines two requests with paths: `health/live` & `health/status` and you enter `health/live` using this path you will only send a request to this path.
+
+`method` allows you to filter which requests you send by method. Allowed methods are GET, POST, UPDATE, PUT, PATH, DELETE (not case-sensitive)
+
+`hooks` allows you to modify specific values in your request body's using a self-made YAML file. This flag is made for situations where it is difficult to form valid requests purely from examples in your OAS. This can be the case particularly in enterprise grade Specs. Parmesan works best when you are able to rely on your example values in your OAS. A basic hooks file would look like this:
+
+```yaml
+- path: /hello
+  method: GET
+  body:
+    name: Theo
+    education.degree: Physics
+```
+
+If a name and degree field are defined in the expected places in your request body these values will be replaced before sending your request.
+
+You can specify multiple hooks in the same file if you want to modify values in different requests.
+
+You must specify the path and method of the request body you want to modify or Parmesan will not recognise you are trying to modify that request. 
+
+For now, you can only modify string, int, and boolean values including nested values of these types. You can not alter arrays or objects directly. 
+
+This flag currently relies on Go's marshalling rules so if you want to modify a string value which will be interpreted as an int you must use "".
+
 ## Roadmap
 These are features I plan on working on soon:
 
-- A send-request command which automates request generation and execution
+- A chain-request command which automates request generation for chains of related requests
 
 - Your ideas? If people find the tool useful. I would love to hear any suggestions on how we can improve it!
 

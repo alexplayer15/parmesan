@@ -123,3 +123,5 @@ func TestWhenOASHasPropertyOfTypeStringWithFormatDateAndNoExample_ShouldReturnFa
 	//have a think about how much spacing matters. Test is fragile as stands
 	assert.Contains(t, result, `"birthday": "2022-01-01"`)
 }
+
+//TO DO: Write tests to ensure http file is outputted as expected, including formatting.
