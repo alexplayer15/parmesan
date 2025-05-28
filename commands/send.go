@@ -14,13 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type SavedResponse struct {
-	Method   string `json:"method"`
-	Url      string `json:"url"`
-	Status   int    `json:"status"`
-	Response any    `json:"response"`
-}
-
 func newSendRequestCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "send-request",
