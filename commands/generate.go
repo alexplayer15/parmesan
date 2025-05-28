@@ -19,53 +19,51 @@ func newGenerateRequestCmd() *cobra.Command {
 		Use:   "generate-request",
 		Short: "Generate a HTTP request from an OpenAPI Spec",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			oasFile := args[0]
-			if err := checkIfFileExists(oasFile); err != nil {
-				return err
-			}
-			oas, err := parseOASFile(oasFile)
-			if err != nil {
-				return fmt.Errorf("error reading OAS file: %w", err)
-			}
-			if err := checkIfOASFileIsValid(oas); err != nil {
-				return fmt.Errorf("invalid OAS structure: %w", err)
-			}
-
-			outputDir, _ := cmd.Flags().GetString("output")
-
-			if err := validateOutputPath(outputDir); err != nil {
-				return err
-			}
-			if err := ensureDirectory(outputDir); err != nil {
-				return err
-			}
-
-			outputFile := filepath.Join(outputDir, changeExtension(oasFile, ".http"))
-
-			chosenServerIndex, _ := cmd.Flags().GetInt("with-server")
-
-			if err := validateChosenServerUrl(chosenServerIndex, oas); err != nil {
-				return err
-			}
-
-			httpRequest, err := request_generator.GenerateHttpRequest(oas, chosenServerIndex)
-			if err != nil {
-				return fmt.Errorf("failed to generate HTTP request: %w", err)
-			}
-
-			if err := os.WriteFile(outputFile, []byte(httpRequest), 0644); err != nil {
-				return fmt.Errorf("failed to write HTTP file: %w", err)
-			}
-
-			return nil
-		},
 	}
 
-	// Define flags
-	cmd.Flags().String("output", ".", "Directory of output for .http file.")
-	cmd.Flags().Int("with-server", 0, "Which server url to use from OAS. 0 = First URL.")
+	flags := bindFlags(cmd)
 
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		oasFile := args[0]
+		if err := checkIfFileExists(oasFile); err != nil {
+			return err
+		}
+		oas, err := parseOASFile(oasFile)
+		if err != nil {
+			return fmt.Errorf("error reading OAS file: %w", err)
+		}
+		if err := checkIfOASFileIsValid(oas); err != nil {
+			return fmt.Errorf("invalid OAS structure: %w", err)
+		}
+
+		outputDir := flags.OutputDir
+
+		if err := validateOutputPath(outputDir); err != nil {
+			return err
+		}
+		if err := ensureDirectory(outputDir); err != nil {
+			return err
+		}
+
+		outputFile := filepath.Join(outputDir, changeExtension(oasFile, ".http"))
+
+		chosenServerIndex := flags.WithServer
+
+		if err := validateChosenServerUrl(chosenServerIndex, oas); err != nil {
+			return err
+		}
+
+		httpRequest, err := request_generator.GenerateHttpRequest(oas, chosenServerIndex)
+		if err != nil {
+			return fmt.Errorf("failed to generate HTTP request: %w", err)
+		}
+
+		if err := os.WriteFile(outputFile, []byte(httpRequest), 0644); err != nil {
+			return fmt.Errorf("failed to write HTTP file: %w", err)
+		}
+
+		return nil
+	}
 	return cmd
 }
 

@@ -64,8 +64,6 @@ func newChainRequestCmd() *cobra.Command {
 				return err
 			}
 
-			type ExtractedValues map[string]map[string]any
-
 			var allResponses []SavedResponse
 			hooks, _ := cmd.Flags().GetString("hooks")
 
