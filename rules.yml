@@ -1,0 +1,23 @@
+- id: first
+  path: /comm/v2/flight-offer/flight-search
+  method: POST
+  extract:
+    headers:
+      - name: X-Session-Id
+        as: sessionId
+    body:
+      - path: flightFareUri
+        as: flightFareUri
+        type: string
+
+- id: second
+  path: /comm/v1/flight-offer/air-bundle-search
+  method: POST
+  inject:
+    headers:
+      - name: X-Session-Id
+        from: first.sessionId
+    body:
+      - path: flightFareUris
+        from: first.flightFareUri
+        type: array 
