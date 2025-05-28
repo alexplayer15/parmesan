@@ -1,13 +1,10 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 
 	oas_struct "github.com/alexplayer15/parmesan/data"
 	"github.com/alexplayer15/parmesan/request_generator"
@@ -25,15 +22,10 @@ func newGenerateRequestCmd() *cobra.Command {
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		oasFile := args[0]
-		if err := checkIfFileExists(oasFile); err != nil {
-			return err
-		}
-		oas, err := parseOASFile(oasFile)
+
+		oas, err := handleOAS(oasFile)
 		if err != nil {
-			return fmt.Errorf("error reading OAS file: %w", err)
-		}
-		if err := checkIfOASFileIsValid(oas); err != nil {
-			return fmt.Errorf("invalid OAS structure: %w", err)
+			return err
 		}
 
 		outputDir := flags.OutputDir
@@ -67,20 +59,6 @@ func newGenerateRequestCmd() *cobra.Command {
 	return cmd
 }
 
-func checkIfFileExists(file string) error {
-	info, err := os.Stat(file)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("file does not exist")
-	}
-	if err != nil {
-		return fmt.Errorf("error checking file: %w", err)
-	}
-	if info.IsDir() {
-		return fmt.Errorf("provided 'file' is a directory")
-	}
-	return nil
-}
-
 func validateOutputPath(path string) error {
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
@@ -101,49 +79,6 @@ func ensureDirectory(path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
-	return nil
-}
-
-func parseOASFile(file string) (oas_struct.OAS, error) {
-	content, err := os.ReadFile(file)
-	if err != nil {
-		return oas_struct.OAS{}, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	ext := strings.TrimPrefix(filepath.Ext(file), ".")
-
-	var oas oas_struct.OAS
-
-	switch ext {
-	case "json":
-		if err := json.Unmarshal(content, &oas); err != nil {
-			return oas_struct.OAS{}, fmt.Errorf("invalid JSON: %w", err)
-		}
-	case "yaml", "yml":
-		if err := yaml.Unmarshal(content, &oas); err != nil {
-			return oas_struct.OAS{}, fmt.Errorf("invalid YAML: %w", err)
-		}
-	default:
-		return oas_struct.OAS{}, fmt.Errorf("unsupported file extension: %s", ext)
-	}
-
-	return oas, nil
-}
-
-func checkIfOASFileIsValid(oas oas_struct.OAS) error {
-	if oas.OpenAPI == "" {
-		return fmt.Errorf("missing required OAS field: openapi")
-	}
-	if oas.Info.Title == "" {
-		return fmt.Errorf("missing required OAS field: info")
-	}
-	if len(oas.Servers) == 0 {
-		return fmt.Errorf("no server URL found in OAS")
-	}
-	if len(oas.Paths) == 0 {
-		return fmt.Errorf("missing required OAS field: paths")
-	}
-
 	return nil
 }
 
