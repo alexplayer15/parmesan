@@ -1,4 +1,4 @@
-package commands
+package data
 
 type RuleSet []Rule
 

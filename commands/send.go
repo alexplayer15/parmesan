@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	flag_helpers "github.com/alexplayer15/parmesan/commands/flag_hepers"
 	hooks_logic "github.com/alexplayer15/parmesan/hooks"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
@@ -25,15 +26,10 @@ func newSendRequestCmd() *cobra.Command {
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		oasFile := args[0]
-		if err := checkIfFileExists(oasFile); err != nil {
-			return err
-		}
-		oas, err := parseOASFile(oasFile)
+
+		oas, err := handleOAS(oasFile)
 		if err != nil {
-			return fmt.Errorf("error reading OAS file: %w", err)
-		}
-		if err := checkIfOASFileIsValid(oas); err != nil {
-			return fmt.Errorf("invalid OAS structure: %w", err)
+			return err
 		}
 
 		chosenServerIndex := flags.WithServer
@@ -121,10 +117,7 @@ func newSendRequestCmd() *cobra.Command {
 
 		outputDir := flags.OutputDir
 
-		if err := validateOutputPath(outputDir); err != nil {
-			return err
-		}
-		if err := ensureDirectory(outputDir); err != nil {
+		if err := flag_helpers.ValidateOutput(outputDir); err != nil {
 			return err
 		}
 

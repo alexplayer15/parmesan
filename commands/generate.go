@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	flag_helpers "github.com/alexplayer15/parmesan/commands/flag_hepers"
 	oas_struct "github.com/alexplayer15/parmesan/data"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/spf13/cobra"
@@ -30,10 +31,7 @@ func newGenerateRequestCmd() *cobra.Command {
 
 		outputDir := flags.OutputDir
 
-		if err := validateOutputPath(outputDir); err != nil {
-			return err
-		}
-		if err := ensureDirectory(outputDir); err != nil {
+		if err := flag_helpers.ValidateOutput(outputDir); err != nil {
 			return err
 		}
 
@@ -57,29 +55,6 @@ func newGenerateRequestCmd() *cobra.Command {
 		return nil
 	}
 	return cmd
-}
-
-func validateOutputPath(path string) error {
-	info, err := os.Stat(path)
-	if os.IsNotExist(err) {
-
-		return nil
-	}
-	if err != nil {
-		return fmt.Errorf("failed to check output path: %w", err)
-	}
-	if !info.IsDir() {
-		return fmt.Errorf("invalid output directory: path exists and is a file")
-	}
-	return nil
-}
-
-func ensureDirectory(path string) error {
-	err := os.MkdirAll(path, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
-	}
-	return nil
 }
 
 func validateChosenServerUrl(chosenServerUrl int, oas oas_struct.OAS) error {

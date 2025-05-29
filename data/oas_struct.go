@@ -1,5 +1,12 @@
-package oas_struct
+package data
 
+type OAS struct {
+	OpenAPI    string                       `json:"openapi" yaml:"openapi"`
+	Info       Info                         `json:"info" yaml:"info"`
+	Servers    []Server                     `json:"servers" yaml:"servers"`
+	Paths      map[string]map[string]Method `json:"paths" yaml:"paths"`
+	Components Components                   `json:"components" yaml:"components"`
+}
 type Property struct {
 	Type        string              `json:"type" yaml:"type"`
 	Format      string              `json:"format,omitempty" yaml:"format,omitempty"`
@@ -62,12 +69,4 @@ type Info struct {
 
 type Components struct {
 	Schemas map[string]Schema `json:"schemas" yaml:"schemas"`
-}
-
-type OAS struct {
-	OpenAPI    string                       `json:"openapi" yaml:"openapi"`
-	Info       Info                         `json:"info" yaml:"info"`
-	Servers    []Server                     `json:"servers" yaml:"servers"`
-	Paths      map[string]map[string]Method `json:"paths" yaml:"paths"`
-	Components Components                   `json:"components" yaml:"components"`
 }
