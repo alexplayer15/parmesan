@@ -7,19 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/alexplayer15/parmesan/chain_logic"
 	flag_helpers "github.com/alexplayer15/parmesan/commands/flag_hepers"
+	"github.com/alexplayer15/parmesan/data"
 	hooks_logic "github.com/alexplayer15/parmesan/hooks"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
 	"github.com/spf13/cobra"
 )
-
-type SavedResponse struct {
-	Method   string `json:"method"`
-	Url      string `json:"url"`
-	Status   int    `json:"status"`
-	Response any    `json:"response"`
-}
 
 type RulesFile []ChainRule
 
@@ -30,6 +25,8 @@ type ChainRule struct {
 	Pick   map[string]string `yaml:"pick,omitempty"`
 	Needs  map[string]string `yaml:"needs,omitempty"`
 }
+
+var extractedValues []string
 
 func newChainRequestCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -64,7 +61,16 @@ func newChainRequestCmd() *cobra.Command {
 			return err
 		}
 
-		var allResponses []SavedResponse
+		rulesFile := flags.RulesFile
+
+		rules, err := chain_logic.UnmarshalRulesFile(rulesFile)
+		if err != nil {
+			return err
+		}
+
+		orderedRequests, err := chain_logic.OrderRequests(requests, rules)
+
+		var allResponses []data.SavedResponse
 		hooks := flags.HooksFile
 
 		var hooksFile hooks_logic.HooksFile
@@ -76,7 +82,7 @@ func newChainRequestCmd() *cobra.Command {
 			}
 		}
 
-		for _, req := range requests {
+		for _, req := range orderedRequests {
 			if hooks != "" {
 				matchingHook := hooks_logic.TryAndFindHookForThisRequest(hooksFile, req)
 
@@ -87,6 +93,10 @@ func newChainRequestCmd() *cobra.Command {
 					}
 				}
 			}
+
+			// if i != 0 {
+			// 	chain_logic.ApplyInjectionRules(req, rules, extractedValues)
+			// }
 
 			responseBody, statusCode, err := request_sender.SendHTTPRequest(req)
 			if err != nil {
@@ -100,12 +110,17 @@ func newChainRequestCmd() *cobra.Command {
 				parsedBody = responseBody
 			}
 
-			savedResp := SavedResponse{
+			savedResp := data.SavedResponse{
 				Method:   req.Method,
 				Url:      req.Url,
 				Status:   statusCode,
 				Response: parsedBody,
 			}
+
+			// extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, rules, req)
+			// if err != nil {
+			// 	return err
+			// }
 
 			allResponses = append(allResponses, savedResp)
 		}

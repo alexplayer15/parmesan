@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	flag_helpers "github.com/alexplayer15/parmesan/commands/flag_hepers"
+	"github.com/alexplayer15/parmesan/data"
 	hooks_logic "github.com/alexplayer15/parmesan/hooks"
 	"github.com/alexplayer15/parmesan/request_generator"
 	"github.com/alexplayer15/parmesan/request_sender"
@@ -60,7 +61,7 @@ func newSendRequestCmd() *cobra.Command {
 			}
 		}
 
-		var allResponses []SavedResponse
+		var allResponses []data.SavedResponse
 		hooks := flags.HooksFile
 
 		var hooksFile hooks_logic.HooksFile
@@ -105,7 +106,7 @@ func newSendRequestCmd() *cobra.Command {
 				parsedBody = responseBody
 			}
 
-			savedResp := SavedResponse{
+			savedResp := data.SavedResponse{
 				Method:   req.Method,
 				Url:      req.Url,
 				Status:   statusCode,

@@ -8,6 +8,7 @@ type Flags struct {
 	Paths      []string
 	OutputDir  string
 	HooksFile  string
+	RulesFile  string
 }
 
 func bindFlags(cmd *cobra.Command) *Flags {
@@ -18,6 +19,7 @@ func bindFlags(cmd *cobra.Command) *Flags {
 	cmd.Flags().StringSliceVar(&flags.Paths, "path", []string{}, "Choose which requests you want to send from your OAS by path. Default is all paths.")
 	cmd.Flags().StringVar(&flags.OutputDir, "output", ".", "Directory of output for HTTP responses.")
 	cmd.Flags().StringVar(&flags.HooksFile, "hooks", "", "Location of hooks file to modify request values.")
+	cmd.Flags().StringVar(&flags.RulesFile, "rules", "", "Location of rules file for chain requests.")
 
 	return flags
 }

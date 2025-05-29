@@ -1,7 +1,7 @@
 - path: /comm/v2/flight-offer/flight-search
   method: POST
   body:
-    flightSearch.departureLocationCode.airportCode: AMS
+    flightSearch.departureLocationCode.airportCode: CDG
 
 - path: /comm/v1/flight-offer/search
   method: POST
