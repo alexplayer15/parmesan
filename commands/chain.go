@@ -26,7 +26,7 @@ type ChainRule struct {
 	Needs  map[string]string `yaml:"needs,omitempty"`
 }
 
-var extractedValues []string
+var extractedValues map[string]any
 
 func newChainRequestCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -121,10 +121,10 @@ func newChainRequestCmd() *cobra.Command {
 				Headers:  headers,
 			}
 
-			// extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, rules, req)
-			// if err != nil {
-			// 	return err
-			// }
+			extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, headers, rules, req)
+			if err != nil {
+				return err
+			}
 
 			allResponses = append(allResponses, savedResp)
 		}

@@ -2,6 +2,7 @@ package chain_logic
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -48,7 +49,7 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet) (re
 
 }
 
-func ApplyExtractionRules(response any, rules data.RuleSet, request request_sender.Request) (map[string]any, error) {
+func ApplyExtractionRules(responseBody any, headers http.Header, rules data.RuleSet, request request_sender.Request) (map[string]any, error) {
 	rule, err := findRuleAssociatedWithRequest(request, rules)
 	if err != nil {
 		return nil, err
@@ -56,18 +57,28 @@ func ApplyExtractionRules(response any, rules data.RuleSet, request request_send
 
 	result := make(map[string]any)
 
-	if rule.Extract != nil {
-		if rule.Extract.Body != nil {
-			bodyValues, err := extractBody(response, rule)
-			if err != nil {
-				return nil, err
-			}
-			for k, v := range bodyValues {
-				result[k] = v
-			}
-		}
+	if rule.Extract == nil {
+		return nil, fmt.Errorf("you have not defined any extraction rules for %T", request)
+	}
 
-		// You can implement extractHeaders similarly
+	if rule.Extract.Body != nil {
+		bodyValues, err := extractBody(responseBody, rule)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range bodyValues {
+			result[k] = v
+		}
+	}
+
+	if rule.Extract.Headers != nil {
+		headerValues, err := extractHeaders(headers, rule)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range headerValues {
+			result[k] = v
+		}
 	}
 
 	return result, nil
@@ -135,7 +146,6 @@ func extractBody(response any, rule data.Rule) (map[string]any, error) {
 		path := item.Path
 		key := item.As
 
-		// Support nested paths like "data.details.uri"
 		value, err := extractJSONPath(body, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to extract path %s: %v", path, err)
@@ -164,4 +174,19 @@ func extractJSONPath(data map[string]any, path string) (any, error) {
 	}
 
 	return current, nil
+}
+
+func extractHeaders(headers http.Header, rule data.Rule) (map[string]any, error) {
+	result := make(map[string]any)
+
+	for _, headerRule := range rule.Extract.Headers {
+		for key, vals := range headers {
+			if strings.EqualFold(key, headerRule.Name) && len(vals) > 0 {
+				result[headerRule.As] = vals[0]
+				break
+			}
+		}
+	}
+
+	return result, nil
 }
