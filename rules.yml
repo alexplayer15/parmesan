@@ -6,7 +6,7 @@
       - name: X-Session-Id
         as: sessionId
     body:
-      - path: flights[0].fares[0].uri
+      - path: flights[*].fares[*].uri
         as: flightFareUri
         type: string
 

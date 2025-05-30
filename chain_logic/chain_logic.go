@@ -43,20 +43,22 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 		return request_sender.Request{}, fmt.Errorf("you have not defined any injection rules for %T", request)
 	}
 
+	// Inject Headers
 	if rule.Inject.Headers != nil {
 		for _, header := range rule.Inject.Headers {
-			if val, ok := extractedValues[parseFromKey(header.From)]; ok {
-				request.Headers[header.Name] = val.(string)
-			} else {
+			val, ok := extractedValues[parseFromKey(header.From)]
+			if !ok {
 				return request_sender.Request{}, fmt.Errorf("injection failed: missing value for header %s", header.From)
 			}
+			request.Headers[header.Name] = fmt.Sprintf("%v", val)
 		}
 	}
 
+	// Inject Body
 	if rule.Inject.Body != nil {
 		var bodyMap map[string]any
-		if err := json.Unmarshal([]byte(request.Body), &bodyMap); err != nil {
-			bodyMap = make(map[string]any) // Handle empty body
+		if err := json.Unmarshal([]byte(request.Body), &bodyMap); err != nil || bodyMap == nil {
+			bodyMap = make(map[string]any) // Handle empty or invalid body
 		}
 
 		for _, field := range rule.Inject.Body {
@@ -64,6 +66,26 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 			if !ok {
 				return request_sender.Request{}, fmt.Errorf("injection failed: missing value for body path %s", field.From)
 			}
+
+			// 🔄 Type-aware coercion
+			switch field.Type {
+			case "array":
+				switch v := val.(type) {
+				case []any:
+					// already good
+				case []string:
+					converted := make([]any, len(v))
+					for i, s := range v {
+						converted[i] = s
+					}
+					val = converted
+				default:
+					val = []any{val} // wrap single value
+				}
+			case "string":
+				val = fmt.Sprintf("%v", val)
+			}
+
 			if err := setJSONPathValue(bodyMap, field.Path, val); err != nil {
 				return request_sender.Request{}, fmt.Errorf("injection failed at path %s: %w", field.Path, err)
 			}
@@ -196,52 +218,67 @@ func extractBody(response any, rule data.Rule) (map[string]any, error) {
 
 var arrayIndexRegex = regexp.MustCompile(`^(\w+)\[(\d+)\]$`)
 
+var wildcardRegex = regexp.MustCompile(`^(\w+)\[\*\]$`)
+
 func extractJSONPath(data any, path string) (any, error) {
 	parts := strings.Split(path, ".")
-	var current any = data
+	var current []any
+	current = []any{data}
 
 	for _, part := range parts {
-		// Handle array indexing: e.g., fares[0]
-		if matches := arrayIndexRegex.FindStringSubmatch(part); len(matches) == 3 {
-			field := matches[1]
-			indexStr := matches[2]
-			index, _ := strconv.Atoi(indexStr)
+		var next []any
 
-			obj, ok := current.(map[string]any)
+		for _, item := range current {
+			// Handle wildcards like "flights[*]"
+			if matches := wildcardRegex.FindStringSubmatch(part); len(matches) == 2 {
+				field := matches[1]
+				obj, ok := item.(map[string]any)
+				if !ok {
+					continue
+				}
+				list, ok := obj[field].([]any)
+				if !ok {
+					continue
+				}
+				next = append(next, list...)
+				continue
+			}
+
+			// Handle array indexing like "flights[2]"
+			if matches := arrayIndexRegex.FindStringSubmatch(part); len(matches) == 3 {
+				field := matches[1]
+				index, _ := strconv.Atoi(matches[2])
+				obj, ok := item.(map[string]any)
+				if !ok {
+					continue
+				}
+				list, ok := obj[field].([]any)
+				if !ok || index >= len(list) {
+					continue
+				}
+				next = append(next, list[index])
+				continue
+			}
+
+			// Normal key lookup
+			obj, ok := item.(map[string]any)
 			if !ok {
-				return nil, fmt.Errorf("expected object to access field '%s'", field)
+				continue
 			}
-
-			list, ok := obj[field].([]interface{})
-			if !ok {
-				fmt.Printf("Type of obj[%q]: %T\n", field, obj[field])
-				return nil, fmt.Errorf("field '%s' is not a list", field)
+			if val, exists := obj[part]; exists {
+				next = append(next, val)
 			}
-			if index >= len(list) {
-				return nil, fmt.Errorf("index %d out of bounds for list '%s'", index, field)
-			}
-
-			current = list[index]
-			continue
 		}
 
-		// Normal object key
-		obj, ok := current.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("expected object to access field '%s'", part)
+		if len(next) == 0 {
+			return nil, fmt.Errorf("path component '%s' matched no elements", part)
 		}
-
-		val, exists := obj[part]
-		if !exists {
-			return nil, fmt.Errorf("field '%s' not found", part)
-		}
-
-		current = val
+		current = next
 	}
 
-	return current, nil
+	// Return first result if multiple
+	return current[0], nil
 }
-
 func extractHeaders(headers http.Header, rule data.Rule) (map[string]any, error) {
 	result := make(map[string]any)
 
