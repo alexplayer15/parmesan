@@ -85,7 +85,7 @@ func newChainRequestCmd() *cobra.Command {
 			}
 		}
 
-		for _, req := range orderedRequests {
+		for i, req := range orderedRequests {
 			if hooks != "" {
 				matchingHook := hooks_logic.TryAndFindHookForThisRequest(hooksFile, req)
 
@@ -97,9 +97,12 @@ func newChainRequestCmd() *cobra.Command {
 				}
 			}
 
-			// if i != 0 {
-			// 	chain_logic.ApplyInjectionRules(req, rules, extractedValues)
-			// }
+			if i != 0 {
+				req, err = chain_logic.ApplyInjectionRules(req, rules, extractedValues)
+				if err != nil {
+					return err
+				}
+			}
 
 			responseBody, statusCode, headers, err := request_sender.SendHTTPRequest(req)
 			if err != nil {
@@ -121,9 +124,15 @@ func newChainRequestCmd() *cobra.Command {
 				Headers:  headers,
 			}
 
-			extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, headers, rules, req)
-			if err != nil {
-				return err
+			if savedResp.Status != 200 && i != len(orderedRequests)-1 {
+				return fmt.Errorf("cannot proceed with chain requests as %s has not been successful: %v", savedResp.Url, savedResp.Response)
+			}
+
+			if i != len(orderedRequests)-1 {
+				extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, headers, rules, req)
+				if err != nil {
+					return err
+				}
 			}
 
 			allResponses = append(allResponses, savedResp)

@@ -1,0 +1,286 @@
+[
+  {
+    "method": "POST",
+    "url": "http://localhost:9090/comm/v2/flight-offer/flight-search",
+    "status": 200,
+    "response": {
+      "baseCurrency": "EUR",
+      "currency": "EUR",
+      "flights": [
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 0,
+              "unitsAvailableAtThisPrice": 0
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [],
+          "flightNumber": "1629",
+          "flightSequence": 1,
+          "flightStatus": "CANCELLED",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T14:35:00",
+          "localDepartureDateTime": "2025-06-25T12:55:00",
+          "saleableStatus": "NO_VALID_FARES"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 0,
+              "unitsAvailableAtThisPrice": 0
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [],
+          "flightNumber": "4530",
+          "flightSequence": 1,
+          "flightStatus": "CANCELLED",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T18:15:00",
+          "localDepartureDateTime": "2025-06-25T16:35:00",
+          "saleableStatus": "NO_VALID_FARES"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 147,
+              "unitsAvailableAtThisPrice": 8
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 28.49,
+                "basePriceInclusiveOfFees": 28.49,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 51.34,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/6839d784c1c76d7060a29aa6/itinerary-prices/HK_TTLnToala11rsJyLdks-ZUyefrk"
+            }
+          ],
+          "flightNumber": "4532",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T22:55:00",
+          "localDepartureDateTime": "2025-06-25T21:15:00",
+          "saleableStatus": "AVAILABLE"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 120,
+              "unitsAvailableAtThisPrice": 7
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 48.49,
+                "basePriceInclusiveOfFees": 48.49,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 71.34,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/6839d784c1c76d7060a29aa6/itinerary-prices/HK_aGxjD7QuEUSn6iHQvzdbrLce_G8"
+            }
+          ],
+          "flightNumber": "4528",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T17:20:00",
+          "localDepartureDateTime": "2025-06-25T15:40:00",
+          "saleableStatus": "AVAILABLE"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 100,
+              "unitsAvailableAtThisPrice": 7
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 77.99,
+                "basePriceInclusiveOfFees": 77.99,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 100.84,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/6839d784c1c76d7060a29aa6/itinerary-prices/HK_Mt_Qxcm3FrqLt5mDcem_nN_UdC8"
+            }
+          ],
+          "flightNumber": "4526",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T09:45:00",
+          "localDepartureDateTime": "2025-06-25T08:05:00",
+          "saleableStatus": "AVAILABLE"
+        }
+      ],
+      "languageCode": "EN",
+      "passengers": [
+        {
+          "passengerId": "0",
+          "passengerTypeCode": "ADT"
+        }
+      ]
+    },
+    "headers": {
+      "Api-Supported-Versions": [
+        "1.0, 2.0"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Fri, 30 May 2025 16:06:28 GMT"
+      ],
+      "Server": [
+        "envoy"
+      ],
+      "X-Client-Transaction-Id": [
+        "999955",
+        "999955"
+      ],
+      "X-Envoy-Upstream-Service-Time": [
+        "187"
+      ],
+      "X-Session-Expiration-Datetime": [
+        "05/30/2025 16:21:27"
+      ],
+      "X-Session-Id": [
+        "6839d783c1c76d7060a29aa5"
+      ],
+      "X-Session-Reference": [
+        "6839d784c1c76d7060a29aa6"
+      ]
+    }
+  }
+]
