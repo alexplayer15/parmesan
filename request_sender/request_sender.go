@@ -202,10 +202,10 @@ func validateURL(rawURL string) error {
 	return nil
 }
 
-func SendHTTPRequest(req Request) (string, int, error) {
+func SendHTTPRequest(req Request) (string, int, http.Header, error) {
 	request, err := http.NewRequest(req.Method, req.Url, bytes.NewBuffer([]byte(req.Body)))
 	if err != nil {
-		return "", 0, fmt.Errorf("failed to create HTTP request: %w", err)
+		return "", 0, nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 
 	for key, value := range req.Headers {
@@ -215,14 +215,14 @@ func SendHTTPRequest(req Request) (string, int, error) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", 0, fmt.Errorf("failed to send HTTP request: %w", err)
+		return "", 0, nil, fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer response.Body.Close()
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return "", response.StatusCode, fmt.Errorf("failed to read response body: %w", err)
+		return "", response.StatusCode, nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	return string(responseBody), response.StatusCode, nil
+	return string(responseBody), response.StatusCode, response.Header, nil
 }

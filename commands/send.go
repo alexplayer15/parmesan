@@ -94,7 +94,7 @@ func newSendRequestCmd() *cobra.Command {
 				}
 			}
 
-			responseBody, statusCode, err := request_sender.SendHTTPRequest(req)
+			responseBody, statusCode, headers, err := request_sender.SendHTTPRequest(req)
 			if err != nil {
 				log.Printf("Failed to send request %s %s: %v", req.Method, req.Url, err)
 				continue
@@ -111,6 +111,7 @@ func newSendRequestCmd() *cobra.Command {
 				Url:      req.Url,
 				Status:   statusCode,
 				Response: parsedBody,
+				Headers:  headers,
 			}
 
 			allResponses = append(allResponses, savedResp)

@@ -69,6 +69,9 @@ func newChainRequestCmd() *cobra.Command {
 		}
 
 		orderedRequests, err := chain_logic.OrderRequests(requests, rules)
+		if err != nil {
+			return err
+		}
 
 		var allResponses []data.SavedResponse
 		hooks := flags.HooksFile
@@ -98,7 +101,7 @@ func newChainRequestCmd() *cobra.Command {
 			// 	chain_logic.ApplyInjectionRules(req, rules, extractedValues)
 			// }
 
-			responseBody, statusCode, err := request_sender.SendHTTPRequest(req)
+			responseBody, statusCode, headers, err := request_sender.SendHTTPRequest(req)
 			if err != nil {
 				log.Printf("Failed to send request %s %s: %v", req.Method, req.Url, err)
 				continue
@@ -115,6 +118,7 @@ func newChainRequestCmd() *cobra.Command {
 				Url:      req.Url,
 				Status:   statusCode,
 				Response: parsedBody,
+				Headers:  headers,
 			}
 
 			// extractedValues, err = chain_logic.ApplyExtractionRules(savedResp.Response, rules, req)
