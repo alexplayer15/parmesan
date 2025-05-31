@@ -19,7 +19,7 @@ func newGenerateRequestCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 
-	flags := bindFlags(cmd)
+	flags := bindGenerateRequestFlags(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		oasFile := args[0]

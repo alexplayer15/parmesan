@@ -23,7 +23,7 @@ func newSendRequestCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 
-	flags := bindFlags(cmd)
+	flags := bindSendRequestFlags(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		oasFile := args[0]
