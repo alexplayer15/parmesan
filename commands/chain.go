@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -106,14 +105,12 @@ func newChainRequestCmd() *cobra.Command {
 
 			responseBody, statusCode, headers, err := request_sender.SendHTTPRequest(req)
 			if err != nil {
-				log.Printf("Failed to send request %s %s: %v", req.Method, req.Url, err)
-				continue
+				return fmt.Errorf("failed to send request %s %s: %v", req.Method, req.Url, err)
 			}
 
 			var parsedBody any
 			if err := json.Unmarshal([]byte(responseBody), &parsedBody); err != nil {
-				log.Printf("Failed to parse JSON body for %s %s: %v. Saving as string.", req.Method, req.Url, err)
-				parsedBody = responseBody
+				return fmt.Errorf("failed to parse JSON body for %s %s: %v", req.Method, req.Url, err)
 			}
 
 			savedResp := data.SavedResponse{
@@ -124,6 +121,7 @@ func newChainRequestCmd() *cobra.Command {
 				Headers:  headers,
 			}
 
+			//think about if we only want to accept 200s. What other success codes could be valid...
 			if savedResp.Status != 200 && i != len(orderedRequests)-1 {
 				return fmt.Errorf("cannot proceed with chain requests as %s has not been successful: %v", savedResp.Url, savedResp.Response)
 			}

@@ -13,6 +13,17 @@
 - id: second
   path: /comm/v1/flight-offer/air-bundle-search
   method: POST
+  extract:
+    headers:
+      - name: X-Session-Id
+        as: sessionId
+    body:
+      - path: airBundleOffers[*].fareUri
+        as: flightFareUri
+        type: string
+      - path: airBundleOffers[*].uri
+        as: bundleOfferUri
+        type: string
   inject:
     headers:
       - name: X-Session-Id
@@ -21,3 +32,19 @@
       - path: flightFareUris
         from: first.flightFareUri
         type: array 
+
+- id: third 
+  path: /comm/v1/flight-offer/create-offer
+  method: POST
+  inject:
+    headers:
+      - name: X-Session-Id
+        from: second.sessionId
+    body:
+      - path: flightFareUris
+        from: second.flightFareUri
+        type: array 
+      - path: bundleOfferUris
+        from: second.bundleOfferUri
+        type: array
+  

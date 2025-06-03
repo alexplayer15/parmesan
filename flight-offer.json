@@ -1,0 +1,969 @@
+[
+  {
+    "method": "POST",
+    "url": "http://localhost:9090/comm/v2/flight-offer/flight-search",
+    "status": 200,
+    "response": {
+      "baseCurrency": "EUR",
+      "currency": "EUR",
+      "flights": [
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 0,
+              "unitsAvailableAtThisPrice": 0
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [],
+          "flightNumber": "1629",
+          "flightSequence": 1,
+          "flightStatus": "CANCELLED",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T14:35:00",
+          "localDepartureDateTime": "2025-06-25T12:55:00",
+          "saleableStatus": "NO_VALID_FARES"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 0,
+              "unitsAvailableAtThisPrice": 0
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [],
+          "flightNumber": "4530",
+          "flightSequence": 1,
+          "flightStatus": "CANCELLED",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T18:15:00",
+          "localDepartureDateTime": "2025-06-25T16:35:00",
+          "saleableStatus": "NO_VALID_FARES"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 147,
+              "unitsAvailableAtThisPrice": 8
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 28.49,
+                "basePriceInclusiveOfFees": 28.49,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 51.34,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/683f07672c1db051477c96f9/itinerary-prices/HK_2hXoj6wH0sB2em50CBVctPaDBqo"
+            }
+          ],
+          "flightNumber": "4532",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T22:55:00",
+          "localDepartureDateTime": "2025-06-25T21:15:00",
+          "saleableStatus": "AVAILABLE"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 120,
+              "unitsAvailableAtThisPrice": 7
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 48.49,
+                "basePriceInclusiveOfFees": 48.49,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 71.34,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/683f07672c1db051477c96f9/itinerary-prices/HK_aCEqyLuwKusIA_MmdPsZHx_X5Pw"
+            }
+          ],
+          "flightNumber": "4528",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T17:20:00",
+          "localDepartureDateTime": "2025-06-25T15:40:00",
+          "saleableStatus": "AVAILABLE"
+        },
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "arrivalAirportDateTimeZoneOffset": "+02:00",
+          "arrivalAirportName": "Paris Charles de Gaulle",
+          "arrivalMarketAreaName": "",
+          "availability": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "passengerTypes": [
+                "ADT"
+              ],
+              "totalUnitsAvailable": 100,
+              "unitsAvailableAtThisPrice": 7
+            }
+          ],
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "departureAirportDateTimeZoneOffset": "+02:00",
+          "departureAirportName": "Nice",
+          "departureMarketAreaName": "",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "STANDARD",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 77.99,
+                "basePriceInclusiveOfFees": 77.99,
+                "fees": [],
+                "promotions": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 100.84,
+                "totalPromotionsAmount": 0,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/683f07672c1db051477c96f9/itinerary-prices/HK_eB2CRop6K5mNPQ1VL2vgEmZWAH8"
+            }
+          ],
+          "flightNumber": "4526",
+          "flightSequence": 1,
+          "flightStatus": "OPEN",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU",
+          "localArrivalDateTime": "2025-06-25T09:45:00",
+          "localDepartureDateTime": "2025-06-25T08:05:00",
+          "saleableStatus": "AVAILABLE"
+        }
+      ],
+      "languageCode": "EN",
+      "passengers": [
+        {
+          "passengerId": "0",
+          "passengerTypeCode": "ADT"
+        }
+      ]
+    },
+    "headers": {
+      "Api-Supported-Versions": [
+        "1.0, 2.0"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Tue, 03 Jun 2025 14:32:07 GMT"
+      ],
+      "Server": [
+        "envoy"
+      ],
+      "X-Client-Transaction-Id": [
+        "999955",
+        "999955"
+      ],
+      "X-Envoy-Upstream-Service-Time": [
+        "260"
+      ],
+      "X-Session-Expiration-Datetime": [
+        "06/03/2025 14:47:07"
+      ],
+      "X-Session-Id": [
+        "683f07672c1db051477c96f8"
+      ],
+      "X-Session-Reference": [
+        "683f07672c1db051477c96f9"
+      ]
+    }
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:9090/comm/v1/flight-offer/air-bundle-search",
+    "status": 200,
+    "response": {
+      "airBundleOffers": [
+        {
+          "code": "STANDARD_BUNDLE",
+          "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+          "nonPricedAncillaries": [
+            {
+              "ancillaryProductCode": "VRS5DIW1FC",
+              "benefitKey": "B0001",
+              "quantity": 1
+            }
+          ],
+          "passengerIds": [
+            "0"
+          ],
+          "pricedAncillaries": [],
+          "unitPriceExcludingFare": {
+            "basePrice": 0,
+            "basePriceInclusiveOfFees": 0,
+            "fees": [],
+            "taxes": [],
+            "totalFeesAmount": 0,
+            "totalPrice": 0,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/0"
+        },
+        {
+          "code": "ESSENTIALS_BUNDLE",
+          "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+          "nonPricedAncillaries": [
+            {
+              "ancillaryProductCode": "VRS5DIW1FC",
+              "benefitKey": "B0001",
+              "quantity": 1
+            }
+          ],
+          "passengerIds": [
+            "0"
+          ],
+          "pricedAncillaries": [
+            {
+              "ancillaryProductCode": "0EMB5Y8SQL",
+              "benefitKey": "B0004",
+              "mandatory": true,
+              "passengerIds": [],
+              "quantity": 1,
+              "type": "Dynamic",
+              "unitPrice": {
+                "basePrice": 38.49,
+                "basePriceInclusiveOfFees": 38.49,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 38.49,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              }
+            },
+            {
+              "ancillaryProductCode": "SAD59K0ZQ5",
+              "benefitKey": "B0012",
+              "mandatory": true,
+              "passengerIds": [],
+              "quantity": 1,
+              "type": "Dynamic",
+              "unitPrice": {
+                "basePrice": 11.99,
+                "basePriceInclusiveOfFees": 11.99,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 11.99,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              }
+            }
+          ],
+          "unitPriceExcludingFare": {
+            "basePrice": 50.48,
+            "basePriceInclusiveOfFees": 50.48,
+            "fees": [],
+            "taxes": [
+              {
+                "amount": 0,
+                "code": "XF"
+              }
+            ],
+            "totalFeesAmount": 0,
+            "totalPrice": 50.48,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/1"
+        },
+        {
+          "code": "STANDARD_PLUS_BUNDLE",
+          "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+          "nonPricedAncillaries": [
+            {
+              "ancillaryProductCode": "DR7CA69UN3",
+              "benefitKey": "B0006",
+              "quantity": 1
+            },
+            {
+              "ancillaryProductCode": "VRS5DIW1FC",
+              "benefitKey": "B0001",
+              "quantity": 1
+            }
+          ],
+          "passengerIds": [
+            "0"
+          ],
+          "pricedAncillaries": [
+            {
+              "ancillaryProductCode": "ER7WWORELI",
+              "benefitKey": "B0014",
+              "mandatory": true,
+              "passengerIds": [],
+              "quantity": 1,
+              "type": "Dynamic",
+              "unitPrice": {
+                "basePrice": 21.49,
+                "basePriceInclusiveOfFees": 21.49,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 21.49,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              }
+            },
+            {
+              "ancillaryProductCode": "LARGE_CABIN_BAG",
+              "benefitKey": "B0003",
+              "mandatory": true,
+              "passengerIds": [],
+              "quantity": 1,
+              "type": "Dynamic",
+              "unitPrice": {
+                "basePrice": 29.49,
+                "basePriceInclusiveOfFees": 29.49,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 29.49,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              }
+            }
+          ],
+          "unitPriceExcludingFare": {
+            "basePrice": 50.98,
+            "basePriceInclusiveOfFees": 50.98,
+            "fees": [],
+            "taxes": [
+              {
+                "amount": 0,
+                "code": "XF"
+              }
+            ],
+            "totalFeesAmount": 0,
+            "totalPrice": 50.98,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/2"
+        }
+      ],
+      "airBundles": [
+        {
+          "code": "STANDARD_BUNDLE",
+          "description": {
+            "longDescription": "Travel light",
+            "name": "Standard",
+            "shortDescription": "Travel light"
+          },
+          "legacyId": "Y",
+          "uri": "/air/search/683f07672c1db051477c96fa/bundles/STANDARD_BUNDLE"
+        },
+        {
+          "code": "STANDARD_PLUS_BUNDLE",
+          "description": {
+            "longDescription": "Perfect for short trips",
+            "name": "Standard Plus",
+            "shortDescription": "Perfect for short trips"
+          },
+          "legacyId": "H",
+          "uri": "/air/search/683f07672c1db051477c96fa/bundles/STANDARD_PLUS_BUNDLE"
+        },
+        {
+          "code": "ESSENTIALS_BUNDLE",
+          "description": {
+            "longDescription": "Great for holidays",
+            "name": "Essentials",
+            "shortDescription": "Great for holidays"
+          },
+          "legacyId": "K",
+          "uri": "/air/search/683f07672c1db051477c96fa/bundles/ESSENTIALS_BUNDLE"
+        }
+      ],
+      "ancillaryProducts": [
+        {
+          "chargeCode": "SCB1",
+          "code": "LARGE_CABIN_BAG",
+          "longDescription": "Maximum Size 56 x 45 x 25 cm",
+          "name": "One Large Cabin Bag",
+          "productClassification": {
+            "groupCode": "CABIN_LUGGAGE",
+            "subGroupCode": "CABIN_BAGS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "Maximum Size 56 x 45 x 25 cm",
+          "weightRestriction": {
+            "quantity": 0,
+            "unitOfMeasure": ""
+          }
+        },
+        {
+          "chargeCode": "SSC2",
+          "code": "ER7WWORELI",
+          "longDescription": "Up Front seat",
+          "name": "Upfront Seat",
+          "productClassification": {
+            "groupCode": "SEATFEE",
+            "subGroupCode": "PREMIUM_SEATS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "Up Front seat",
+          "weightRestriction": {
+            "quantity": 0,
+            "unitOfMeasure": ""
+          }
+        },
+        {
+          "chargeCode": "LUG",
+          "code": "0EMB5Y8SQL",
+          "longDescription": "23kg hold bag",
+          "name": "23kg Hold Bag",
+          "productClassification": {
+            "groupCode": "HOLD_LUGGAGE",
+            "subGroupCode": "HOLD_BAGS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "23kg hold bag",
+          "weightRestriction": {
+            "quantity": 23,
+            "unitOfMeasure": "KG"
+          }
+        },
+        {
+          "chargeCode": "SSC3",
+          "code": "SAD59K0ZQ5",
+          "longDescription": "Standard seat",
+          "name": "Standard Seat",
+          "productClassification": {
+            "groupCode": "SEATFEE",
+            "subGroupCode": "STANDARD_SEATS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "Standard seat",
+          "weightRestriction": {
+            "quantity": 0,
+            "unitOfMeasure": ""
+          }
+        },
+        {
+          "code": "VRS5DIW1FC",
+          "longDescription": "One small under seat cabin bag (max 45 x 36 x 20 cm)",
+          "name": "One Small under seat cabin bag",
+          "productClassification": {
+            "groupCode": "BENEFITS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "Maximum size 45 x 36 x 20 cm. Must fit under the seat in front of you.",
+          "weightRestriction": {
+            "quantity": 0,
+            "unitOfMeasure": ""
+          }
+        },
+        {
+          "chargeCode": "SA1",
+          "code": "DR7CA69UN3",
+          "longDescription": "Speedy Boarding",
+          "name": "Speedy Boarding",
+          "productClassification": {
+            "groupCode": "BENEFITS",
+            "typeCode": "AIR_ANCILLARY_ITEMS"
+          },
+          "shortDescription": "Speedy Boarding",
+          "weightRestriction": {
+            "quantity": 0,
+            "unitOfMeasure": ""
+          }
+        }
+      ],
+      "baseCurrency": "EUR",
+      "combinedAirBundleOffers": [
+        {
+          "airBundleCode": "STANDARD_BUNDLE",
+          "airBundles": [
+            {
+              "code": "STANDARD_BUNDLE",
+              "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+              "nonPricedAncillaries": [
+                {
+                  "ancillaryProductCode": "VRS5DIW1FC",
+                  "benefitKey": "B0001",
+                  "quantity": 1
+                }
+              ],
+              "passengerIds": [
+                "0"
+              ],
+              "pricedAncillaries": [],
+              "unitPriceExcludingFare": {
+                "basePrice": 0,
+                "basePriceInclusiveOfFees": 0,
+                "fees": [],
+                "taxes": [],
+                "totalFeesAmount": 0,
+                "totalPrice": 0,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              },
+              "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/0"
+            }
+          ],
+          "averagedUnitPriceExcludingFare": {
+            "basePrice": 0,
+            "basePriceInclusiveOfFees": 0,
+            "fees": [],
+            "taxes": [],
+            "totalFeesAmount": 0,
+            "totalPrice": 0,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "isRecommended": false
+        },
+        {
+          "airBundleCode": "STANDARD_PLUS_BUNDLE",
+          "airBundles": [
+            {
+              "code": "STANDARD_PLUS_BUNDLE",
+              "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+              "nonPricedAncillaries": [
+                {
+                  "ancillaryProductCode": "DR7CA69UN3",
+                  "benefitKey": "B0006",
+                  "quantity": 1
+                },
+                {
+                  "ancillaryProductCode": "VRS5DIW1FC",
+                  "benefitKey": "B0001",
+                  "quantity": 1
+                }
+              ],
+              "passengerIds": [
+                "0"
+              ],
+              "pricedAncillaries": [
+                {
+                  "ancillaryProductCode": "ER7WWORELI",
+                  "benefitKey": "B0014",
+                  "mandatory": true,
+                  "passengerIds": [],
+                  "quantity": 1,
+                  "type": "Dynamic",
+                  "unitPrice": {
+                    "basePrice": 21.49,
+                    "basePriceInclusiveOfFees": 21.49,
+                    "fees": [],
+                    "taxes": [
+                      {
+                        "amount": 0,
+                        "code": "XF"
+                      }
+                    ],
+                    "totalFeesAmount": 0,
+                    "totalPrice": 21.49,
+                    "totalTaxesAmount": 0,
+                    "totalTaxesInclusiveOfFees": 0
+                  }
+                },
+                {
+                  "ancillaryProductCode": "LARGE_CABIN_BAG",
+                  "benefitKey": "B0003",
+                  "mandatory": true,
+                  "passengerIds": [],
+                  "quantity": 1,
+                  "type": "Dynamic",
+                  "unitPrice": {
+                    "basePrice": 29.49,
+                    "basePriceInclusiveOfFees": 29.49,
+                    "fees": [],
+                    "taxes": [
+                      {
+                        "amount": 0,
+                        "code": "XF"
+                      }
+                    ],
+                    "totalFeesAmount": 0,
+                    "totalPrice": 29.49,
+                    "totalTaxesAmount": 0,
+                    "totalTaxesInclusiveOfFees": 0
+                  }
+                }
+              ],
+              "unitPriceExcludingFare": {
+                "basePrice": 50.98,
+                "basePriceInclusiveOfFees": 50.98,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 50.98,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              },
+              "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/2"
+            }
+          ],
+          "averagedUnitPriceExcludingFare": {
+            "basePrice": 50.98,
+            "basePriceInclusiveOfFees": 50.98,
+            "fees": [],
+            "taxes": [
+              {
+                "amount": 0,
+                "code": "XF"
+              }
+            ],
+            "totalFeesAmount": 0,
+            "totalPrice": 50.98,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "isRecommended": false
+        },
+        {
+          "airBundleCode": "ESSENTIALS_BUNDLE",
+          "airBundles": [
+            {
+              "code": "ESSENTIALS_BUNDLE",
+              "fareUri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3",
+              "nonPricedAncillaries": [
+                {
+                  "ancillaryProductCode": "VRS5DIW1FC",
+                  "benefitKey": "B0001",
+                  "quantity": 1
+                }
+              ],
+              "passengerIds": [
+                "0"
+              ],
+              "pricedAncillaries": [
+                {
+                  "ancillaryProductCode": "0EMB5Y8SQL",
+                  "benefitKey": "B0004",
+                  "mandatory": true,
+                  "passengerIds": [],
+                  "quantity": 1,
+                  "type": "Dynamic",
+                  "unitPrice": {
+                    "basePrice": 38.49,
+                    "basePriceInclusiveOfFees": 38.49,
+                    "fees": [],
+                    "taxes": [
+                      {
+                        "amount": 0,
+                        "code": "XF"
+                      }
+                    ],
+                    "totalFeesAmount": 0,
+                    "totalPrice": 38.49,
+                    "totalTaxesAmount": 0,
+                    "totalTaxesInclusiveOfFees": 0
+                  }
+                },
+                {
+                  "ancillaryProductCode": "SAD59K0ZQ5",
+                  "benefitKey": "B0012",
+                  "mandatory": true,
+                  "passengerIds": [],
+                  "quantity": 1,
+                  "type": "Dynamic",
+                  "unitPrice": {
+                    "basePrice": 11.99,
+                    "basePriceInclusiveOfFees": 11.99,
+                    "fees": [],
+                    "taxes": [
+                      {
+                        "amount": 0,
+                        "code": "XF"
+                      }
+                    ],
+                    "totalFeesAmount": 0,
+                    "totalPrice": 11.99,
+                    "totalTaxesAmount": 0,
+                    "totalTaxesInclusiveOfFees": 0
+                  }
+                }
+              ],
+              "unitPriceExcludingFare": {
+                "basePrice": 50.48,
+                "basePriceInclusiveOfFees": 50.48,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 0,
+                    "code": "XF"
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 50.48,
+                "totalTaxesAmount": 0,
+                "totalTaxesInclusiveOfFees": 0
+              },
+              "uri": "/air/search/683f07672c1db051477c96fa/bundle-offers/1"
+            }
+          ],
+          "averagedUnitPriceExcludingFare": {
+            "basePrice": 50.48,
+            "basePriceInclusiveOfFees": 50.48,
+            "fees": [],
+            "taxes": [
+              {
+                "amount": 0,
+                "code": "XF"
+              }
+            ],
+            "totalFeesAmount": 0,
+            "totalPrice": 50.48,
+            "totalTaxesAmount": 0,
+            "totalTaxesInclusiveOfFees": 0
+          },
+          "isRecommended": false
+        }
+      ],
+      "currency": "EUR",
+      "flights": [
+        {
+          "arrivalAirportCode": "CDG",
+          "arrivalAirportCountryCode": "FR",
+          "departureAirportCode": "NCE",
+          "departureAirportCountryCode": "FR",
+          "fares": [
+            {
+              "fareFamilyCode": "STANDARD",
+              "fareFamilyName": "Standard",
+              "isBlendedPrice": false,
+              "passengerTypeCode": "ADT",
+              "unitPrice": {
+                "basePrice": 28.49,
+                "basePriceInclusiveOfFees": 28.49,
+                "fees": [],
+                "taxes": [
+                  {
+                    "amount": 22.85,
+                    "code": "APD",
+                    "description": ""
+                  }
+                ],
+                "totalFeesAmount": 0,
+                "totalPrice": 51.34,
+                "totalTaxesAmount": 22.85,
+                "totalTaxesInclusiveOfFees": 22.85
+              },
+              "uri": "/air/search/683f07672c1db051477c96fa/itinerary-prices/1_3"
+            }
+          ],
+          "flightKey": "20250625NCECDG4532",
+          "flightNumber": "4532",
+          "iataCarrierCode": "EC",
+          "icaoCarrierCode": "EJU"
+        }
+      ],
+      "languageCode": "en",
+      "passengers": [
+        {
+          "passengerId": "0",
+          "passengerTypeCode": "ADT"
+        }
+      ]
+    },
+    "headers": {
+      "Api-Supported-Versions": [
+        "1.0, 2.0"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Tue, 03 Jun 2025 14:32:07 GMT"
+      ],
+      "Server": [
+        "envoy"
+      ],
+      "X-Client-Transaction-Id": [
+        "1"
+      ],
+      "X-Envoy-Upstream-Service-Time": [
+        "238"
+      ],
+      "X-Session-Expiration-Datetime": [
+        "06/03/2025 14:47:07"
+      ],
+      "X-Session-Id": [
+        "683f07672c1db051477c96f8"
+      ],
+      "X-Session-Reference": [
+        "683f07672c1db051477c96fa"
+      ]
+    }
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:9090/comm/v1/flight-offer/create-offer",
+    "status": 200,
+    "response": {
+      "offerUri": "/core/v3.0/offers/683f07682c1db051477c9702",
+      "warnings": []
+    },
+    "headers": {
+      "Api-Supported-Versions": [
+        "1.0, 2.0"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Tue, 03 Jun 2025 14:32:08 GMT"
+      ],
+      "Server": [
+        "envoy"
+      ],
+      "X-Client-Transaction-Id": [
+        "123"
+      ],
+      "X-Envoy-Upstream-Service-Time": [
+        "202"
+      ],
+      "X-Session-Id": [
+        "683f07672c1db051477c96f8"
+      ]
+    }
+  }
+]

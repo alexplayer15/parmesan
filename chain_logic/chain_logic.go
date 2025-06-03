@@ -40,10 +40,9 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 	}
 
 	if rule.Inject == nil {
-		return request_sender.Request{}, fmt.Errorf("you have not defined any injection rules for %T", request)
+		return request_sender.Request{}, fmt.Errorf("you have not defined any injection rules for %v", request)
 	}
 
-	// Inject Headers
 	if rule.Inject.Headers != nil {
 		for _, header := range rule.Inject.Headers {
 			val, ok := extractedValues[parseFromKey(header.From)]
@@ -54,11 +53,10 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 		}
 	}
 
-	// Inject Body
 	if rule.Inject.Body != nil {
 		var bodyMap map[string]any
 		if err := json.Unmarshal([]byte(request.Body), &bodyMap); err != nil || bodyMap == nil {
-			bodyMap = make(map[string]any) // Handle empty or invalid body
+			bodyMap = make(map[string]any)
 		}
 
 		for _, field := range rule.Inject.Body {
@@ -67,12 +65,10 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 				return request_sender.Request{}, fmt.Errorf("injection failed: missing value for body path %s", field.From)
 			}
 
-			// 🔄 Type-aware coercion
 			switch field.Type {
 			case "array":
 				switch v := val.(type) {
 				case []any:
-					// already good
 				case []string:
 					converted := make([]any, len(v))
 					for i, s := range v {
@@ -80,7 +76,7 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 					}
 					val = converted
 				default:
-					val = []any{val} // wrap single value
+					val = []any{val}
 				}
 			case "string":
 				val = fmt.Sprintf("%v", val)
@@ -186,19 +182,9 @@ func extractBody(response any, rule data.Rule) (map[string]any, error) {
 	result := make(map[string]any)
 
 	var body map[string]any
-	switch r := response.(type) {
-	case []byte:
-		if err := json.Unmarshal(r, &body); err != nil {
-			return nil, fmt.Errorf("invalid JSON response: %v", err)
-		}
-	case string:
-		if err := json.Unmarshal([]byte(r), &body); err != nil {
-			return nil, fmt.Errorf("invalid JSON response string: %v", err)
-		}
-	case map[string]any:
-		body = r
-	default:
-		return nil, fmt.Errorf("unexpected response type: %T", response)
+	body, ok := response.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("expected JSON object at root, got %T", response)
 	}
 
 	for _, item := range rule.Extract.Body {
@@ -285,7 +271,7 @@ func extractHeaders(headers http.Header, rule data.Rule) (map[string]any, error)
 	for _, headerRule := range rule.Extract.Headers {
 		for key, vals := range headers {
 			if strings.EqualFold(key, headerRule.Name) && len(vals) > 0 {
-				result[headerRule.As] = vals[0]
+				result[headerRule.As] = vals[0] //only supports one value per header
 				break
 			}
 		}
@@ -297,7 +283,7 @@ func extractHeaders(headers http.Header, rule data.Rule) (map[string]any, error)
 func parseFromKey(from string) string {
 	parts := strings.Split(from, ".")
 	if len(parts) == 2 {
-		return parts[1] // e.g., "sessionId"
+		return parts[1]
 	}
 	return from
 }
