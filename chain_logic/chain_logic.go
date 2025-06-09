@@ -12,18 +12,17 @@ import (
 	"strings"
 
 	"github.com/alexplayer15/parmesan/data"
-	"github.com/alexplayer15/parmesan/request_sender"
 	"github.com/stretchr/testify/assert/yaml"
 )
 
-func OrderRequests(requests []request_sender.Request, rules data.RuleSet) ([]request_sender.Request, error) {
+func OrderRequests(requests []data.Request, rules data.RuleSet) ([]data.Request, error) {
 
-	var orderedRequests []request_sender.Request
+	var orderedRequests []data.Request
 
 	for _, rule := range rules {
 		request, err := findRequestAssociatedWithRule(requests, rule)
 		if err != nil {
-			return []request_sender.Request{}, err
+			return []data.Request{}, err
 		}
 
 		orderedRequests = append(orderedRequests, request)
@@ -33,21 +32,21 @@ func OrderRequests(requests []request_sender.Request, rules data.RuleSet) ([]req
 	return orderedRequests, nil
 }
 
-func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, extractedValues map[string]any) (request_sender.Request, error) {
+func ApplyInjectionRules(request data.Request, rules data.RuleSet, extractedValues map[string]any) (data.Request, error) {
 	rule, err := findRuleAssociatedWithRequest(request, rules)
 	if err != nil {
-		return request_sender.Request{}, err
+		return data.Request{}, err
 	}
 
 	if rule.Inject == nil {
-		return request_sender.Request{}, fmt.Errorf("you have not defined any injection rules for %v", request)
+		return data.Request{}, fmt.Errorf("you have not defined any injection rules for %v", request)
 	}
 
 	if rule.Inject.Headers != nil {
 		for _, header := range rule.Inject.Headers {
 			val, ok := extractedValues[parseFromKey(header.From)]
 			if !ok {
-				return request_sender.Request{}, fmt.Errorf("injection failed: missing value for header %s", header.From)
+				return data.Request{}, fmt.Errorf("injection failed: missing value for header %s", header.From)
 			}
 			request.Headers[header.Name] = fmt.Sprintf("%v", val)
 		}
@@ -62,7 +61,7 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 		for _, field := range rule.Inject.Body {
 			val, ok := extractedValues[parseFromKey(field.From)]
 			if !ok {
-				return request_sender.Request{}, fmt.Errorf("injection failed: missing value for body path %s", field.From)
+				return data.Request{}, fmt.Errorf("injection failed: missing value for body path %s", field.From)
 			}
 
 			switch field.Type {
@@ -83,13 +82,13 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 			}
 
 			if err := setJSONPathValue(bodyMap, field.Path, val); err != nil {
-				return request_sender.Request{}, fmt.Errorf("injection failed at path %s: %w", field.Path, err)
+				return data.Request{}, fmt.Errorf("injection failed at path %s: %w", field.Path, err)
 			}
 		}
 
 		bodyBytes, err := json.Marshal(bodyMap)
 		if err != nil {
-			return request_sender.Request{}, fmt.Errorf("failed to encode modified request body: %w", err)
+			return data.Request{}, fmt.Errorf("failed to encode modified request body: %w", err)
 		}
 		request.Body = string(bodyBytes)
 	}
@@ -97,7 +96,7 @@ func ApplyInjectionRules(request request_sender.Request, rules data.RuleSet, ext
 	return request, nil
 }
 
-func ApplyExtractionRules(responseBody any, headers http.Header, rules data.RuleSet, request request_sender.Request) (map[string]any, error) {
+func ApplyExtractionRules(responseBody any, headers http.Header, rules data.RuleSet, request data.Request) (map[string]any, error) {
 	rule, err := findRuleAssociatedWithRequest(request, rules)
 	if err != nil {
 		return nil, err
@@ -154,7 +153,7 @@ func UnmarshalRulesFile(rulesFile string) (data.RuleSet, error) {
 	return rules, nil
 }
 
-func findRequestAssociatedWithRule(requests []request_sender.Request, rule data.Rule) (request_sender.Request, error) {
+func findRequestAssociatedWithRule(requests []data.Request, rule data.Rule) (data.Request, error) {
 
 	for _, request := range requests {
 		parsedUrl, _ := url.Parse(request.Url)
@@ -163,10 +162,10 @@ func findRequestAssociatedWithRule(requests []request_sender.Request, rule data.
 		}
 	}
 
-	return request_sender.Request{}, fmt.Errorf("no request associated with the requests defined in the rules")
+	return data.Request{}, fmt.Errorf("no request associated with the requests defined in the rules")
 }
 
-func findRuleAssociatedWithRequest(request request_sender.Request, rules data.RuleSet) (data.Rule, error) {
+func findRuleAssociatedWithRequest(request data.Request, rules data.RuleSet) (data.Rule, error) {
 
 	for _, rule := range rules {
 		parsedUrl, _ := url.Parse(request.Url)

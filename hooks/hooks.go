@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/alexplayer15/parmesan/data"
 	"github.com/alexplayer15/parmesan/errors"
-	"github.com/alexplayer15/parmesan/request_sender"
 	"gopkg.in/yaml.v3"
 )
 
@@ -45,7 +45,7 @@ func UnmarshalHooksFile(hooks string) (HooksFile, error) {
 	return hooksFile, nil
 }
 
-func TryAndFindHookForThisRequest(hooks HooksFile, req request_sender.Request) HookEntry {
+func TryAndFindHookForThisRequest(hooks HooksFile, req data.Request) HookEntry {
 
 	//URL has already been validated so no need to return an error
 	parsedURL, _ := url.Parse(req.Url)

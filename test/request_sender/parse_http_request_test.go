@@ -6,21 +6,10 @@ import (
 	"github.com/alexplayer15/parmesan/errors"
 	"github.com/alexplayer15/parmesan/request_sender"
 	test_builder "github.com/alexplayer15/parmesan/test_builders"
+	"github.com/alexplayer15/parmesan/test_helpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type TestRequest struct {
-	Name string
-	Age  int
-}
-
-func NewTestRequest(name string, age int) *TestRequest {
-	return &TestRequest{
-		Name: name,
-		Age:  age,
-	}
-}
 
 func Test_WhenHttpFileIsEmpty_ShouldError(t *testing.T) {
 	//Arrange
@@ -91,7 +80,7 @@ func Test_WhenURLIsMissingHost_ShouldReturnValidationError(t *testing.T) {
 
 func Test_WhenValidHTTPFileIsGenerated_ShouldReturnValidRequest(t *testing.T) {
 	//Arrange
-	testRequestBody := NewTestRequest("Alex", 25)
+	testRequestBody := test_helpers.NewTestRequest("Alex", 25)
 	httpRequest := test_builder.NewHTTPRequestBuilder().
 		WithSummary("Test Summary").
 		WithMethod("GET").
@@ -121,7 +110,7 @@ func Test_WhenValidHTTPFileIsGenerated_ShouldReturnValidRequest(t *testing.T) {
 
 func Test_WhenMultipleRequestsAreParsed_ShouldReturnDetailsCorrectly(t *testing.T) {
 	//Arrange
-	testRequestBodyOne := NewTestRequest("Alex", 25)
+	testRequestBodyOne := test_helpers.NewTestRequest("Alex", 25)
 	httpRequestOne := test_builder.NewHTTPRequestBuilder().
 		WithSummary("Test Summary").
 		WithMethod("GET").
@@ -130,7 +119,7 @@ func Test_WhenMultipleRequestsAreParsed_ShouldReturnDetailsCorrectly(t *testing.
 		WithJSONBody(testRequestBodyOne).
 		Build()
 
-	testRequestBodyTwo := NewTestRequest("Mia", 27)
+	testRequestBodyTwo := test_helpers.NewTestRequest("Mia", 27)
 	httpRequestTwo := test_builder.NewHTTPRequestBuilder().
 		WithSummary("Test Summary").
 		WithMethod("GET").

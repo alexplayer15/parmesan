@@ -14,6 +14,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type TestRequest struct {
+	Name string
+	Age  int
+}
+
+func NewTestRequest(name string, age int) *TestRequest {
+	return &TestRequest{
+		Name: name,
+		Age:  age,
+	}
+}
+
 func ExtractBody(jsonWithHeaders string) (string, error) {
 	start := strings.Index(jsonWithHeaders, "{")
 	if start == -1 {

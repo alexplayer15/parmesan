@@ -9,21 +9,15 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/alexplayer15/parmesan/data"
 	"github.com/alexplayer15/parmesan/errors"
 )
 
-type Request struct {
-	Method  string
-	Url     string
-	Headers map[string]string
-	Body    string
-}
-
-func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
-	var requests []Request
+func ParseHttpRequestFile(httpRequestFile string) ([]data.Request, error) {
+	var requests []data.Request
 
 	if len(httpRequestFile) == 0 {
-		return []Request{}, errors.ErrEmptyHTTPFile
+		return []data.Request{}, errors.ErrEmptyHTTPFile
 	}
 
 	lines := strings.Split(httpRequestFile, "\n")
@@ -54,11 +48,11 @@ func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
 
 	for _, block := range blocks {
 		if len(block) == 0 {
-			return []Request{}, fmt.Errorf("empty request block")
+			return []data.Request{}, fmt.Errorf("empty request block")
 		}
 		req, err := getRequestInfo(block)
 		if err != nil {
-			return []Request{}, fmt.Errorf("failed to extract req from block: %w", err)
+			return []data.Request{}, fmt.Errorf("failed to extract req from block: %w", err)
 		}
 		requests = append(requests, req)
 	}
@@ -66,23 +60,23 @@ func ParseHttpRequestFile(httpRequestFile string) ([]Request, error) {
 	return requests, nil
 }
 
-func getRequestInfo(block []string) (Request, error) {
-	var request Request
+func getRequestInfo(block []string) (data.Request, error) {
+	var request data.Request
 	method, err := getMethod(block)
 	if err != nil {
-		return Request{}, fmt.Errorf("failed to extract method: %w", err)
+		return data.Request{}, fmt.Errorf("failed to extract method: %w", err)
 	}
 	url, err := getURL(block)
 	if err != nil {
-		return Request{}, fmt.Errorf("failed to extract URL: %w", err)
+		return data.Request{}, fmt.Errorf("failed to extract URL: %w", err)
 	}
 	headers, bodyStartingIndex, err := getHeaders(block)
 	if err != nil {
-		return Request{}, fmt.Errorf("failed to extract headers: %w", err)
+		return data.Request{}, fmt.Errorf("failed to extract headers: %w", err)
 	}
 	body, err := getBody(block, bodyStartingIndex)
 	if err != nil {
-		return Request{}, fmt.Errorf("failed to extract body: %w", err)
+		return data.Request{}, fmt.Errorf("failed to extract body: %w", err)
 	}
 	request.Method = method
 	request.Url = url
@@ -202,7 +196,7 @@ func validateURL(rawURL string) error {
 	return nil
 }
 
-func SendHTTPRequest(req Request) (string, int, http.Header, error) {
+func SendHTTPRequest(req data.Request) (string, int, http.Header, error) {
 	request, err := http.NewRequest(req.Method, req.Url, bytes.NewBuffer([]byte(req.Body)))
 	if err != nil {
 		return "", 0, nil, fmt.Errorf("failed to create HTTP request: %w", err)
