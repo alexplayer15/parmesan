@@ -8,6 +8,7 @@ import (
 const (
 	ErrMissingInjectionRule ErrorCode = "MissingInjectionRule"
 	ErrMissingHeaderValue   ErrorCode = "MissingHeaderValue"
+	ErrMissingBodyValue     ErrorCode = "MissingBodyValue"
 )
 
 var (
@@ -38,4 +39,8 @@ func MissingInjectionRuleError(ruleField string) error {
 
 func MissingHeaderValue(ruleField string) error {
 	return NewRuleError(ruleField, ErrMissingHeaderValue, fmt.Sprintf("injection failed: missing value for header %s", ruleField))
+}
+
+func MissingBodyValue(ruleField string) error {
+	return NewRuleError(ruleField, ErrMissingBodyValue, fmt.Sprintf("injection failed: missing value for body path %s", ruleField))
 }

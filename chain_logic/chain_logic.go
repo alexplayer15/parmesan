@@ -62,7 +62,7 @@ func ApplyInjectionRules(request data.Request, rules data.RuleSet, extractedValu
 		for _, field := range rule.Inject.Body {
 			val, ok := extractedValues[parseFromKey(field.From)]
 			if !ok {
-				return data.Request{}, fmt.Errorf("injection failed: missing value for body path %s", field.From)
+				return data.Request{}, errors.MissingBodyValue(field.From)
 			}
 
 			switch field.Type {
