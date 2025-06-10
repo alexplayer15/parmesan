@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/alexplayer15/parmesan/data"
+	"github.com/alexplayer15/parmesan/errors"
 	"github.com/stretchr/testify/assert/yaml"
 )
 
@@ -162,7 +163,7 @@ func findRequestAssociatedWithRule(requests []data.Request, rule data.Rule) (dat
 		}
 	}
 
-	return data.Request{}, fmt.Errorf("no request associated with the requests defined in the rules")
+	return data.Request{}, errors.ErrNoMatchingRequestsInRulesFile
 }
 
 func findRuleAssociatedWithRequest(request data.Request, rules data.RuleSet) (data.Rule, error) {

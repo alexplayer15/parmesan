@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexplayer15/parmesan/chain_logic"
 	"github.com/alexplayer15/parmesan/data"
+	"github.com/alexplayer15/parmesan/errors"
 	test_builder "github.com/alexplayer15/parmesan/test_builders"
 	"github.com/alexplayer15/parmesan/test_helpers"
 	"github.com/stretchr/testify/assert"
@@ -45,3 +46,33 @@ func Test_WhenGivenAValidRulesFileAndHttpRequest_ShouldOrderRequestsAccordingToR
 	assert.Equal(t, "GET", orderedRequests[1].Method)
 	assert.Equal(t, "http://localhost:8081/example-path-one", orderedRequests[1].Url)
 }
+
+func Test_WhenOrderingRequests_IfNoRequestsMatch_ShouldErrorAndInformUser(t *testing.T) {
+	//Arrange
+	requestOne := test_builder.NewParsedHttpRequest().
+		WithMethod("GET").
+		WithUrl("http://localhost:8081/example-path-one").
+		WithHeader("Content", "application/json").
+		WithJSONBody(test_helpers.NewTestRequest("Alex", 25)).
+		Build()
+
+	requests := []data.Request{requestOne}
+
+	rules := test_builder.NewRuleSetBuilder().
+		WithRule("second", "/example-path-two", "POST").
+		EndRule().
+		Build()
+
+	//Act
+	_, err := chain_logic.OrderRequests(requests, rules)
+
+	//Assert
+	assert.ErrorIs(t, err, errors.ErrNoMatchingRequestsInRulesFile)
+}
+
+// func Test_WhenApplyingInjectionRules_IfNoInjectionRulesAreDefined_ShouldError(t *testing.T){
+// 	//Arrange
+
+// 	//Act
+// 	_, err := chain_logic.ApplyInjectionRules()
+// }

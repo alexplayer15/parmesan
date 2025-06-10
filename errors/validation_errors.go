@@ -15,7 +15,8 @@ const (
 )
 
 var (
-	ErrEmptyHTTPFile = errors.New("HTTP file is empty")
+	ErrEmptyHTTPFile                 = errors.New("HTTP file is empty")
+	ErrNoMatchingRequestsInRulesFile = errors.New("no request associated with the requests defined in the rules")
 )
 
 type ValidationError struct {
