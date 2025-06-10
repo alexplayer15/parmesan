@@ -40,14 +40,14 @@ func ApplyInjectionRules(request data.Request, rules data.RuleSet, extractedValu
 	}
 
 	if rule.Inject == nil {
-		return data.Request{}, fmt.Errorf("you have not defined any injection rules for %v", request)
+		return data.Request{}, errors.MissingInjectionRuleError(request.Url)
 	}
 
 	if rule.Inject.Headers != nil {
 		for _, header := range rule.Inject.Headers {
 			val, ok := extractedValues[parseFromKey(header.From)]
 			if !ok {
-				return data.Request{}, fmt.Errorf("injection failed: missing value for header %s", header.From)
+				return data.Request{}, errors.MissingHeaderValue(header.From)
 			}
 			request.Headers[header.Name] = fmt.Sprintf("%v", val)
 		}

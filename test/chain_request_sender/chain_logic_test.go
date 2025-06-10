@@ -70,9 +70,53 @@ func Test_WhenOrderingRequests_IfNoRequestsMatch_ShouldErrorAndInformUser(t *tes
 	assert.ErrorIs(t, err, errors.ErrNoMatchingRequestsInRulesFile)
 }
 
-// func Test_WhenApplyingInjectionRules_IfNoInjectionRulesAreDefined_ShouldError(t *testing.T){
-// 	//Arrange
+func Test_WhenApplyingInjectionRules_IfNoInjectionRulesAreDefined_ShouldError(t *testing.T) {
+	//Arrange
+	request := test_builder.NewParsedHttpRequest().
+		WithMethod("GET").
+		WithUrl("http://localhost:8081/example-path-one").
+		WithHeader("Content", "application/json").
+		WithJSONBody(test_helpers.NewTestRequest("Alex", 25)).
+		Build()
 
-// 	//Act
-// 	_, err := chain_logic.ApplyInjectionRules()
-// }
+	rules := test_builder.NewRuleSetBuilder().
+		WithRule("first", "/example-path-one", "GET").
+		EndRule().
+		Build()
+
+	extractedValues := make(map[string]any)
+
+	//Act
+	_, err := chain_logic.ApplyInjectionRules(request, rules, extractedValues)
+
+	//Assert
+	var ruleError *errors.RuleError
+	assert.ErrorAs(t, err, &ruleError)
+	assert.Equal(t, errors.ErrMissingInjectionRule, ruleError.ErrorCode)
+}
+
+func Test_WhenApplyingInjectionRules_IfMissingHeaderValueFromInjectionRule_ShouldError(t *testing.T) {
+	//Arrange
+	request := test_builder.NewParsedHttpRequest().
+		WithMethod("GET").
+		WithUrl("http://localhost:8081/example-path-one").
+		WithHeader("Content", "application/json").
+		WithJSONBody(test_helpers.NewTestRequest("Alex", 25)).
+		Build()
+
+	rules := test_builder.NewRuleSetBuilder().
+		WithRule("first", "/example-path-one", "GET").
+		AddHeaderInject("example-name", "example-from").
+		EndRule().
+		Build()
+
+	extractedValues := make(map[string]any)
+
+	//Act
+	_, err := chain_logic.ApplyInjectionRules(request, rules, extractedValues)
+
+	//Assert
+	var ruleError *errors.RuleError
+	assert.ErrorAs(t, err, &ruleError)
+	assert.Equal(t, errors.ErrMissingHeaderValue, ruleError.ErrorCode)
+}
