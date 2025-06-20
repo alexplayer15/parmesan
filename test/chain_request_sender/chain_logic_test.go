@@ -146,3 +146,33 @@ func Test_WhenApplyingInjectionRules_IfMissingBodyValueFromInjectionRule_ShouldE
 	assert.ErrorAs(t, err, &ruleError)
 	assert.Equal(t, errors.ErrMissingBodyValue, ruleError.ErrorCode)
 }
+
+func Test_WhenApplyingInjectionRules_IfValidInjectionRuleAppliedToBody_ShouldReturnModifiedRequestBody(t *testing.T) {
+	//Arrange
+	request := test_builder.NewParsedHttpRequest().
+		WithMethod("GET").
+		WithUrl("http://localhost:8081/example-path-two").
+		WithHeader("Content", "application/json").
+		WithJSONBody(test_helpers.NewTestRequest("Alex", 25)).
+		Build()
+
+	rules := test_builder.NewRuleSetBuilder().
+		WithRule("first", "/example-path-one", "GET").
+		AddBodyExtract("example-name", "example-as", "string").
+		EndRule().
+		WithRule("second", "/example-path-two", "GET").
+		AddBodyInject("Name", "first.Name", "string").
+		EndRule().
+		Build()
+
+	extractedValues := make(map[string]any)
+	extractedValues["Name"] = "Mia"
+
+	//Act
+	modifiedRequest, err := chain_logic.ApplyInjectionRules(request, rules, extractedValues)
+
+	//Assert
+	assert.NoError(t, err)
+	expectedRequestBody := `{"Name":"Mia","Age":25}`
+	assert.JSONEq(t, expectedRequestBody, modifiedRequest.Body)
+}

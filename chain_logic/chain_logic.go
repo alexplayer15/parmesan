@@ -215,7 +215,6 @@ func extractJSONPath(data any, path string) (any, error) {
 		var next []any
 
 		for _, item := range current {
-			// Handle wildcards like "flights[*]"
 			if matches := wildcardRegex.FindStringSubmatch(part); len(matches) == 2 {
 				field := matches[1]
 				obj, ok := item.(map[string]any)
@@ -230,7 +229,6 @@ func extractJSONPath(data any, path string) (any, error) {
 				continue
 			}
 
-			// Handle array indexing like "flights[2]"
 			if matches := arrayIndexRegex.FindStringSubmatch(part); len(matches) == 3 {
 				field := matches[1]
 				index, _ := strconv.Atoi(matches[2])
@@ -265,6 +263,7 @@ func extractJSONPath(data any, path string) (any, error) {
 	// Return first result if multiple
 	return current[0], nil
 }
+
 func extractHeaders(headers http.Header, rule data.Rule) (map[string]any, error) {
 	result := make(map[string]any)
 
@@ -293,27 +292,22 @@ func setJSONPathValue(root map[string]any, path string, value any) error {
 	current := root
 
 	for i, part := range parts {
-		// Last part is where we set the value
 		isLast := i == len(parts)-1
 
-		// Handle array syntax: e.g. fares[0]
 		if matches := arrayIndexRegex.FindStringSubmatch(part); len(matches) == 3 {
 			key := matches[1]
 			index, _ := strconv.Atoi(matches[2])
 
-			// Ensure key exists
 			child, exists := current[key]
 			if !exists {
 				child = []any{}
 			}
 
-			// Ensure it's an array
 			array, ok := child.([]any)
 			if !ok {
 				return fmt.Errorf("path '%s' is not an array", key)
 			}
 
-			// Extend array if needed
 			for len(array) <= index {
 				array = append(array, map[string]any{})
 			}
@@ -321,7 +315,7 @@ func setJSONPathValue(root map[string]any, path string, value any) error {
 			if isLast {
 				array[index] = value
 			} else {
-				// Prepare next map level
+
 				nextMap, ok := array[index].(map[string]any)
 				if !ok {
 					nextMap = map[string]any{}
